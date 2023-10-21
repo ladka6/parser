@@ -7,6 +7,8 @@ public class Main {
 		
 		System.out.println(parser.parse(program));
 		
-		System.out.println("Test Github");
+		System.out.println("Test Github 2");
+		
+		
 	}
 }
