@@ -1,4 +1,5 @@
 import Errors.SyntaxError;
+import enums.HtmlEnums;
 
 public class Parser {
 	private String _string;
@@ -22,22 +23,28 @@ public class Parser {
 		return new Program("Program",Literal());
 	}
 	
-	private Object Literal() throws Exception {
+	private Token Literal() throws Exception {
 		switch(this._lookahead.getType()) {
-			case "NUMBER": 
-				return this.NumericLiteral();
+			case ELEMENT: 
+				return this.ElementLiteral();
 			default: 
 				throw new SyntaxError("Literal: unexpecred literal production");
 		}
 	}
-	
-	private Object NumericLiteral() throws SyntaxError {
-		Token token = this._eat("NUMBER");
 		
-		return new Token("NumericLiteral",token.getValue());
+	private Token ElementLiteral() throws SyntaxError {
+		Token token = this._eat(HtmlEnums.ELEMENT);
+		
+		return new Token(HtmlEnums.ELEMENT,token.getTag(),token.getContent());
 	}
 	
-	private Token _eat(String tokenType) throws SyntaxError {
+//	private Token NumericLiteral() throws SyntaxError {
+//		Token token = this._eat("NUMBER");
+//		
+//		return new Token("NumericLiteral",token.getValue());
+//	}
+	
+	private Token _eat(HtmlEnums tokenType) throws SyntaxError {
 		Token token = this._lookahead;
 
 	    if (token == null) {
