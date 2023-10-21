@@ -6,9 +6,5 @@ public class Main {
 		String program = "4123123";
 		
 		System.out.println(parser.parse(program));
-		
-		System.out.println("Test Github 2");
-		
-		
 	}
 }

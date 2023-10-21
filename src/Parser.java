@@ -1,3 +1,4 @@
+import Errors.SyntaxError;
 
 public class Parser {
 	private String _string;
@@ -58,60 +59,3 @@ public class Parser {
 	
 }
 
-class Token {
-	private String type;
-	private int value;
-	
-	public Token(String type,int value) {
-		// TODO Auto-generated constructor stub
-		this.type = type;
-		this.value = value;
-	}
-	
-	public int getValue() { 
-		return this.value;
-	}
-	
-	public String getType() {
-		return this.type;
-	}
-	
-	public void setValue(int value) {
-		this.value = value;
-	}
-	
-	public void setType(String type) {
-		this.type = type;
-	}
-	
-	@Override
-    public String toString() {
-        return "Token{" +
-                "type='" + type + '\'' +
-                ", value=" + value +
-                '}';
-    }
-}
-class Program {
-	private String type;
-	private Object body;
-	
-	public Program(String type, Object body) {
-		this.type = type;
-		this.body = body;
-	}
-	
-	@Override
-	public String toString() {
-        return "Program{" +
-                "type='" + type + '\'' +
-                ", body=" + body +
-                '}';
-    }
-}
-
-class SyntaxError extends Exception {
-	public SyntaxError(String str) {
-		super(str);
-	}
-}
