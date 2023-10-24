@@ -1,63 +1,34 @@
 import java.util.ArrayList;
 import java.util.List;
 
-import enums.HtmlEnums;
-
-
 public class Token {
 
-	private String tag;
-	private HtmlEnums type;
-	private String content;
-	private List<Token> children;
-	
-	public Token(HtmlEnums type,String tag,String content) {
+	private String type;
+	private String value;
+
+	public Token(String type, String value) {
 		this.type = type;
-		this.tag = tag;
-		this.content = content;
-		this.children = new ArrayList<>();
+		this.value = value;
 	}
-	
-	
-	public HtmlEnums getType() {
-		return (HtmlEnums) this.type;
+
+	public String getType() {
+		return type;
 	}
-	
-	public void setType(HtmlEnums type) {
+
+	public void setType(String type) {
 		this.type = type;
 	}
-	
-	public String getTag() {
-		return tag;
+
+	public String getValue() {
+		return value;
 	}
 
-	public void setTag(String tag) {
-		this.tag = tag;
+	public void setValue(String value) {
+		this.value = value;
 	}
 
-	public String getContent() {
-		return content;
-	}
-
-	public void setContent(String content) {
-		this.content = content;
-	}
-
-	public List<Token> getChildren() {
-		return children;
-	}
-
-	public void setChildren(List<Token> children) {
-		this.children = children;
-	}
-	
 	@Override
 	public String toString() {
-        return "Token{" +
-                "type=" + type +
-                ", tag=" + tag +
-                ", content=" + content +
-                ", children=" + children +
-                '}';
-    }
+		return "Token{" + "type=" + type + ", value=" + value + '}';
+	}
 }

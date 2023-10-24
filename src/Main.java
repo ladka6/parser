@@ -1,13 +1,8 @@
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import enums.HtmlEnums;
-
 public class Main {
 	public static void main(String[] args) throws Exception {
 		Parser parser = new Parser();
 //		
-		String program = "<div>Efsa</div> <div>Ege</div>";
+		String program = "\"42\"";
 //		
 		System.out.println(parser.parse(program));
 		
