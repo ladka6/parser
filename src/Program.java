@@ -10,10 +10,10 @@ public class Program {
 	
 	@Override
 	public String toString() {
-        return "Program{" +
-                "type='" + type + '\'' +
-                ", body=" + body +
-                '}';
+        return "{" +
+                " type = '" + type + '\'' +
+                ", body = " + body +
+                " }";
     }
 }
 

@@ -54,9 +54,9 @@ public class Tokenizer {
 		this._string = string;
 	}
 
-	private boolean isEOF() {
-		return this.cursor == this._string.length();
-	}
+//	private boolean isEOF() {
+//		return this.cursor == this._string.length();
+//	}
 
 	private boolean hasMoreTokens() {
 		return this.cursor < this._string.length();

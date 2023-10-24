@@ -1,8 +1,3 @@
-
-
-import java.util.ArrayList;
-import java.util.List;
-
 import errors.SyntaxError;
 
 public class Parser {
@@ -23,7 +18,7 @@ public class Parser {
 	}
 	
 	private Object Program() throws Exception {
-		return Literal();
+		return new Program("Program",this.Literal());
 	}
 	
 	private Token Literal() throws Exception {

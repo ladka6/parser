@@ -1,6 +1,3 @@
-import java.util.ArrayList;
-import java.util.List;
-
 public class Token {
 
 	private String type;
@@ -29,6 +26,6 @@ public class Token {
 
 	@Override
 	public String toString() {
-		return "Token{" + "type=" + type + ", value=" + value + '}';
+		return "{ " + "type = " + type + ", value = " + value + " }";
 	}
 }
