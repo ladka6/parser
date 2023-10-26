@@ -1,9 +1,10 @@
-public class Token {
+package tokenizer;
 
-	private String type;
+public  class Literal {
+    private String type;
 	private String value;
 
-	public Token(String type, String value) {
+	public Literal(String type, String value) {
 		this.type = type;
 		this.value = value;
 	}

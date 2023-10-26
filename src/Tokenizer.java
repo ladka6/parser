@@ -1,9 +1,11 @@
+import errors.SyntaxError;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import tokenizer.Literal;
 
-import errors.SyntaxError;
+
 
 public class Tokenizer {
 	private String _string;
@@ -75,7 +77,7 @@ public class Tokenizer {
 		}
 	}
 
-	public Token getNextToken() throws SyntaxError {
+	public Literal getNextToken() throws SyntaxError {
 		if (!this.hasMoreTokens()) {			
 			return null;
 		}
@@ -96,7 +98,7 @@ public class Tokenizer {
                 return this.getNextToken();
             }
 			
-			return new Token(tokenType,tokenValue);
+			return new Literal(tokenType,tokenValue);
 		}
 
 		return null;
