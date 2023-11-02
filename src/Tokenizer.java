@@ -3,8 +3,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import tokenizer.Literal;
-
+import types.Token;
+import types.TypeEnum;
 
 
 public class Tokenizer {
@@ -13,39 +13,49 @@ public class Tokenizer {
 
 	public static List<TokenSpec> getTokenSpec() {
 		List<TokenSpec> tokenSpecs = new ArrayList<>();
-
+		//Keywords:
+		tokenSpecs.add(new TokenSpec("^\\blet\\b", TypeEnum.LET));
+		tokenSpecs.add(new TokenSpec("^\\bif\\b", TypeEnum.IF));
+		tokenSpecs.add(new TokenSpec("^\\belse\\b", TypeEnum.ELSE));
 		// Whitespace
 		tokenSpecs.add(new TokenSpec("^\\s+", null));
-
+		
 		// Skip single-line comments
 		tokenSpecs.add(new TokenSpec("^//.*", null));
-
+		
 		// MultiLine /* */
 		tokenSpecs.add(new TokenSpec("^/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/", null));
-
+		
 		// Symbol delimiters
-		tokenSpecs.add(new TokenSpec("^;", ";"));
-		tokenSpecs.add(new TokenSpec("^\\{", "{"));
-		tokenSpecs.add(new TokenSpec("^\\}", "}"));
-		tokenSpecs.add(new TokenSpec("^\\(", "("));
-		tokenSpecs.add(new TokenSpec("^\\)", ")"));
+		tokenSpecs.add(new TokenSpec("^;", TypeEnum.SEMICOLON));
+		tokenSpecs.add(new TokenSpec("^\\{", TypeEnum.LEFT_BRACE));
+		tokenSpecs.add(new TokenSpec("^\\}", TypeEnum.RIGHT_BRACE));
+		tokenSpecs.add(new TokenSpec("^\\(", TypeEnum.LEFT_PARANTHESIS));
+		tokenSpecs.add(new TokenSpec("^\\)", TypeEnum.RIGTH_PARANTHESIS));
+		tokenSpecs.add(new TokenSpec("^,", TypeEnum.COMMA));
+		
+		
 		// Number
-		tokenSpecs.add(new TokenSpec("^\\d+", "NUMBER"));
-
+		tokenSpecs.add(new TokenSpec("^\\d+", TypeEnum.NUMBER));
+		
 		// Identifiers
-		tokenSpecs.add(new TokenSpec("^\\w+", "IDENTIFIER"));
+		tokenSpecs.add(new TokenSpec("^\\w+", TypeEnum.IDENTIFIER));
+
 
 		// Assignment Operators: *= /= += -=
-		tokenSpecs.add(new TokenSpec("^=", "SIMPLE_ASSIGN"));
-		tokenSpecs.add(new TokenSpec("^[*\\/\\+\\-]=", "COMPLEX_ASSIGN"));
+		tokenSpecs.add(new TokenSpec("^=", TypeEnum.SIMPLE_ASSIGN));
+		tokenSpecs.add(new TokenSpec("^[*\\/\\+\\-]=", TypeEnum.COMPLEX_ASSIGN));
 
 		// Math Operators (+,-,*)
-		tokenSpecs.add(new TokenSpec("^[+\\-]", "ADDITIVE_OPERATOR"));
-		tokenSpecs.add(new TokenSpec("^[*\\/]", "MULTIPLICATIVE_OPERATOR"));
+		tokenSpecs.add(new TokenSpec("^[+\\-]", TypeEnum.ADDITIVE_OPERATOR));
+		tokenSpecs.add(new TokenSpec("^[*\\/]", TypeEnum.MULTIPLICATIVE_OPERATOR));
 
+		// Relational operators
+		tokenSpecs.add(new TokenSpec("^[><]=?", TypeEnum.RELATIONAL_OPERATOR));
+		// /^[><]=?/
 		// String
-		tokenSpecs.add(new TokenSpec("\"[^\"]*\"", "STRING"));
-		tokenSpecs.add(new TokenSpec("^'[^']*'", "STRING"));
+		tokenSpecs.add(new TokenSpec("\"[^\"]*\"", TypeEnum.STRING));
+		tokenSpecs.add(new TokenSpec("^'[^']*'", TypeEnum.STRING));
 
 		return tokenSpecs;
 	}
@@ -55,10 +65,6 @@ public class Tokenizer {
 		this.cursor = 0;
 		this._string = string;
 	}
-
-//	private boolean isEOF() {
-//		return this.cursor == this._string.length();
-//	}
 
 	private boolean hasMoreTokens() {
 		return this.cursor < this._string.length();
@@ -76,8 +82,8 @@ public class Tokenizer {
 			return null;
 		}
 	}
-
-	public Literal getNextToken() throws SyntaxError {
+	
+	public Token getNextToken() throws SyntaxError {
 		if (!this.hasMoreTokens()) {			
 			return null;
 		}
@@ -86,7 +92,7 @@ public class Tokenizer {
 		
 		for (TokenSpec tokenSpec : getTokenSpec()) {
 			String regex = tokenSpec.pattern.pattern();
-			String tokenType = tokenSpec.type;
+			TypeEnum tokenType = tokenSpec.type;
 			
 			String tokenValue = this._match(regex, string);
 			
@@ -98,7 +104,7 @@ public class Tokenizer {
                 return this.getNextToken();
             }
 			
-			return new Literal(tokenType,tokenValue);
+			return new Token(tokenType,tokenValue);
 		}
 
 		return null;

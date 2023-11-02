@@ -1,5 +1,5 @@
 import java.util.List;
-import tokenizer.Token;
+import types.Token;
 
 
 public class TokenList {
