@@ -20,6 +20,9 @@ public class Tokenizer {
 		tokenSpecs.add(new TokenSpec("^\\bture\\b", TypeEnum.TRUE));
 		tokenSpecs.add(new TokenSpec("^\\bfalse\\b", TypeEnum.FALSE));
 		tokenSpecs.add(new TokenSpec("^\\bnull\\b", TypeEnum.NULL));
+		tokenSpecs.add(new TokenSpec("^\\bwhile\\b", TypeEnum.WHILE));
+		tokenSpecs.add(new TokenSpec("^\\bdo\\b", TypeEnum.DO));
+		tokenSpecs.add(new TokenSpec("^\\bfor\\b", TypeEnum.FOR));
 
 		// Whitespace
 		tokenSpecs.add(new TokenSpec("^\\s+", null));
