@@ -1,3 +1,4 @@
+import errors.SyntaxError;
 import java.util.ArrayList;
 import java.util.List;
 import types.*;
@@ -6,6 +7,7 @@ import types.literals.Literal;
 import types.literals.NullLiteral;
 import types.literals.NumericLiteral;
 import types.literals.StringLiteral;
+
 
 
 
@@ -64,7 +66,8 @@ public class Parser {
      *  | BlockStatement
      *  | EmptyStatement
      *  | VariableStatement
-     *  | IfStatement
+     *  | IfStatement  
+     *  | IterationStatement
      *  ;
      * @return
      * @throws Exception
@@ -79,10 +82,121 @@ public class Parser {
                 return blockStatement();
             case LET:
                 return this.variableStatement();
+            case WHILE:
+            case DO:
+            case FOR:
+                return this.iterationStatement();
             default:
                 return expressionStatement();
         }
     }
+
+    /**
+     * IterationStatement
+     *  : WhileStatement
+     *  | DoWhileStatement
+     *  | ForStatement
+     * @return
+     */
+    private Expression iterationStatement() throws Throwable {
+        switch(this._lookahead.getType()) {
+            case WHILE:
+                return this.whileStatement();
+            case DO:
+                return this.doWhileStatement();
+            case FOR:
+                return this.forStatement();
+        }
+        throw new SyntaxError("Error");
+    }
+
+    /**
+     * WhileStatement
+     *  : 'while' '(' Expression ')' Statement
+     *  ;
+     * @return
+     * @throws Throwable
+     */
+    private WhileStatement whileStatement() throws Throwable {
+        this._eat(TypeEnum.WHILE); 
+        this._eat(TypeEnum.LEFT_PARANTHESIS);
+
+        Expression test = this.expression();
+
+        this._eat(TypeEnum.RIGTH_PARANTHESIS);
+
+        Expression body = this.statement();
+
+        return new WhileStatement(TypeEnum.WHILE_STATEMENT, test, body);
+    }
+
+    /**
+     * DoWhileStatement
+     *  : 'do' Statement 'while' '{' Expression '}' ';'
+     * @return
+     * @throws Throwable
+     */
+    private DoWhileStatement doWhileStatement() throws Throwable{
+        this._eat(TypeEnum.DO);
+
+        Expression body = this.statement();
+
+        this._eat(TypeEnum.WHILE);
+        this._eat(TypeEnum.LEFT_PARANTHESIS);
+
+        Expression test = this.expression();
+
+        this._eat(TypeEnum.RIGTH_PARANTHESIS);
+        this._eat(TypeEnum.SEMICOLON);
+
+        return new DoWhileStatement(TypeEnum.DO_WHILE_STATEMENT,body,test);
+    }
+
+    /**
+     * ForStatement
+     *  : 'for' '{' OptStatementInit ';' OptExpression ';' OptExpression ')' Statement
+     *  ;
+     * @return
+     * @throws Throwable
+     */
+    private ForStatement forStatement() throws Throwable {
+        this._eat(TypeEnum.FOR);
+        this._eat(TypeEnum.LEFT_PARANTHESIS);
+
+        Expression init = this._lookahead.getType() != TypeEnum.SEMICOLON 
+                            ? this.forStatementInit() : null;
+        this._eat(TypeEnum.SEMICOLON);
+
+        Expression test = this._lookahead.getType() != TypeEnum.SEMICOLON
+                            ? this.expression() : null;
+        this._eat(TypeEnum.SEMICOLON);
+
+        Expression update = this._lookahead.getType() != TypeEnum.RIGTH_PARANTHESIS
+                            ? this.expression() : null;
+        
+        this._eat(TypeEnum.RIGTH_PARANTHESIS);
+
+        Expression body = this.statement();
+
+        return new ForStatement(TypeEnum.FOR_STATEMENT, init, test, update, body);
+    }
+
+    /**
+     * ForStatementInit
+     *  : VariableStatementInit
+     *  | Expression
+     *  ;
+     * @return
+     * @throws Throwable
+     */
+     private Expression forStatementInit() throws Throwable {
+        if(this._lookahead.getType().equals(TypeEnum.LET)) {
+            return this.variableStatementInit();
+        }
+        return this.expression();
+     }
+
+
 
     /**
      * IfStatement
@@ -109,34 +223,34 @@ public class Parser {
         }else {
             alternate = null;
         }
-        // = this._lookahead != null && this._lookahead.getType().equals(TypeEnum.ELSE) 
-        //             ? {this._eat(TypeEnum.ELSE) ; this.statement()}
-        //             : null;
-
-                    // Alternate alternate;
-                    // if (this._lookahead != null && this._lookahead.getType().equals(TypeEnum.ELSE)) {
-                    //     this._eat(TypeEnum.ELSE);
-                    //     this.statement();
-                    //     alternate = this._lookahead;
-                    // } else {
-                    //     alternate = null;
-                    // }
                     
         return new IfStatement(TypeEnum.IF_STATEMENT, test, consequent, alternate);
     }
 
     /**
+     * VariableStatementInit
+     *  : 'let' VariableDeclarationList
+     *  ;
+     * @return
+     * @throws Throwable
+     */
+    private VariableStatement variableStatementInit() throws Throwable {
+        this._eat(TypeEnum.LET);
+        List<VariableDeclaration> declarations = this.variableDeclarationList();
+        return new VariableStatement(TypeEnum.VARIABLE_STATEMENT,declarations);
+    }
+
+    /**
      * VariableStatement
-     *  : 'let' VariableDeclarationList ';'
+     *  : VariableStatementInit ';'
      * ;
      * @return
      * @throws Exception
      */
     private VariableStatement variableStatement() throws Throwable{
-        this._eat(TypeEnum.LET);
-        List<VariableDeclaration> declarations = this.variableDeclarationList();
+        VariableStatement variableStatement = this.variableStatementInit();
         this._eat(TypeEnum.SEMICOLON);
-        return new VariableStatement(TypeEnum.VARIABLE_STATEMENT, declarations);
+        return variableStatement;
     }
 
     /**
@@ -149,7 +263,6 @@ public class Parser {
         
         do {
             declarations.add(this.variableDeclaration());
-            // this._eat(TypeEnum.COMMA);
         } while (this._lookahead.getType().equals(TypeEnum.COMMA) && this._eat(TypeEnum.COMMA) != null);
 
         return declarations;
