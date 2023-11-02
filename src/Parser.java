@@ -250,15 +250,6 @@ public class Parser {
         return new AssignmentExpression(TypeEnum.ASSIGNMENT_EXPRESSION, this.assignmentOperator(), this.checkValidAssignment(left), this.assignmentExpression());
     }
 
-    /**
-     * LeftHandSideExpression
-     *  : Identifier
-     *  ;
-     * @return
-     */
-    private Expression leftHandSidExpression() throws Exception {
-        return this.identifier();
-    }
 
     /**
      * Identifier
@@ -421,13 +412,11 @@ public class Parser {
     }
 
     public Expression multiplicativeExpression() throws Throwable {
-        // return this.binaryExpression("primaryExpression", TypeEnum.MULTIPLICATIVE_OPERATOR);
-
-        Expression left = primaryExpression();
+        Expression left = unaryExpression();
 
         while (this._lookahead != null && this._lookahead.getType() == TypeEnum.MULTIPLICATIVE_OPERATOR) {
             Token operator = this._eat(TypeEnum.MULTIPLICATIVE_OPERATOR);
-            Expression right = this.primaryExpression();
+            Expression right = this.unaryExpression();
             BinaryExpression binaryExpression = new BinaryExpression(TypeEnum.BINARY_EXPRESSION,operator,left,right);
             left = binaryExpression;
         }
@@ -435,6 +424,51 @@ public class Parser {
         return left;
     }
 
+    /**
+     * UnaryExpression
+     *  : LeftHandSideExpression
+     *  | ADDITIVE_OPERATOR UnaryExpression
+     *  | LOGCAL_NOT UnaryExpression
+     * @return
+     */
+    private Expression unaryExpression() throws Throwable {
+        Token operator = null;
+        switch(this._lookahead.getType()) {
+            case ADDITIVE_OPERATOR:
+            System.out.println("ASDASD");
+                operator = this._eat(TypeEnum.ADDITIVE_OPERATOR);
+                break;
+            case LOGICAL_NOT:
+                System.out.println("ASDASD");
+                operator = this._eat(TypeEnum.LOGICAL_NOT);
+                break;
+        }
+
+        if(operator != null) {
+            return new UnaryExpression(TypeEnum.UNARY_EXPRESSION, operator, this.unaryExpression());
+        }
+
+        return this.leftHandSidExpression();
+    }
+
+    /**
+     * LeftHandSideExpression
+     *  : Identifier
+     *  ;
+     * @return
+     */
+    private Expression leftHandSidExpression() throws Throwable {
+        return this.primaryExpression();
+    }
+
+    /**
+     * PrimaryExpression
+     *  : Literal
+     *  | ParanthesizedExpression
+     *  | Identifier
+     * @return
+     * @throws Throwable
+     */
     public Expression primaryExpression() throws Throwable{
         if(this.isLiteral(this._lookahead.getType())) {
             return this.literal();
@@ -442,6 +476,8 @@ public class Parser {
         switch(this._lookahead.getType()) {
             case LEFT_PARANTHESIS:
                 return this.paranthesizedExpression();
+            case IDENTIFIER:
+                return this.identifier();
             default:
                 return this.leftHandSidExpression();
         }
