@@ -62,6 +62,7 @@ public class Tokenizer {
 		//Logical operators
 		tokenSpecs.add(new TokenSpec("^&&", TypeEnum.LOGICAL_AND));
 		tokenSpecs.add(new TokenSpec("^\\|\\|", TypeEnum.LOGICAL_OR));
+		tokenSpecs.add(new TokenSpec("^!", TypeEnum.LOGICAL_NOT));
 
 		// String
 		tokenSpecs.add(new TokenSpec("\"[^\"]*\"", TypeEnum.STRING));
