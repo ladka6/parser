@@ -2,13 +2,7 @@ import types.Program;
 public class Main {
     public static void main(String[] args) {
         String program = """
-                
-            
-                if(x+y<10) {
-                    x = 5;
-                }else {
-                    x=0;
-                }
+                x > 0 || y < 1;
                 """;
 
         Parser parser = new Parser();

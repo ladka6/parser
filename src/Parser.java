@@ -1,8 +1,9 @@
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import types.*;
+import types.literals.BooleanLiteral;
 import types.literals.Literal;
+import types.literals.NullLiteral;
 import types.literals.NumericLiteral;
 import types.literals.StringLiteral;
 
@@ -241,7 +242,7 @@ public class Parser {
      * @throws Exception
      */
     private Expression assignmentExpression() throws Throwable {
-        Expression left = this.relationalExpression();
+        Expression left = this.logicalORExpression();
         if(!this.isAssignmentOperator(this._lookahead.getType())){
             return left;
         }
@@ -302,6 +303,81 @@ public class Parser {
     }
 
     /**
+     * Logical AND expression
+     *  x && y
+     *  
+     * LogicalANDExpression
+     *  : EqualityExpression LOGICAL_AND LogicalANDExpression
+     *  | EqualityExpression
+     *  ;
+     * @return
+     * @throws Throwable
+     */
+    private Expression logicalANDExpression() throws Throwable {
+        Expression left = equalityExpression();
+
+        while (this._lookahead != null && this._lookahead.getType() == TypeEnum.LOGICAL_AND) {
+            Token operator = this._eat(TypeEnum.LOGICAL_AND);
+            Expression right = this.equalityExpression();
+            LogicalExpression logicalExpression = new LogicalExpression(TypeEnum.BINARY_EXPRESSION,operator,left,right);
+            left = logicalExpression;
+        }
+        
+        return left;
+        // return this.logicalExpression('EqualityExpression',TypeEnum.LOGICAL_AND);
+    }
+
+    /**
+     * Logical OR expression
+     *  x || y
+     *  
+     * LogicalANDExpression
+     *  : EqualityExpression LOGICAL_AND LogicalANDExpression
+     *  | EqualityExpression
+     *  ;
+     * @return
+     * @throws Throwable
+     */
+    private Expression logicalORExpression() throws Throwable {
+        // return this.logicalExpression('LogicalANDExpression',TypeEnum.LOGICAL_OR);
+        Expression left = logicalANDExpression();
+
+        while (this._lookahead != null && this._lookahead.getType() == TypeEnum.LOGICAL_OR) {
+            Token operator = this._eat(TypeEnum.LOGICAL_OR);
+            Expression right = this.logicalANDExpression();
+            LogicalExpression logicalExpression = new LogicalExpression(TypeEnum.BINARY_EXPRESSION,operator,left,right);
+            left = logicalExpression;
+        }
+        
+        return left;
+    }
+
+
+    /**
+     * EQUALITY_OPERATOR ==, !=
+     *  x == y
+     *  x != y
+     *  
+     * EqualityExpression
+     *  : RelationalExpression EQUALITY_OPERATOR EqualityExpression
+     *  | RelationalExpression 
+     * @return
+     * @throws Throwable
+     */
+    private Expression equalityExpression() throws Throwable{
+        Expression left = relationalExpression();
+
+        while (this._lookahead != null && this._lookahead.getType() == TypeEnum.EQUALITY_OPERATOR) {
+            Token operator = this._eat(TypeEnum.EQUALITY_OPERATOR);
+            Expression right = this.relationalExpression();
+            BinaryExpression binaryExpression = new BinaryExpression(TypeEnum.BINARY_EXPRESSION,operator,left,right);
+            left = binaryExpression;
+        }
+        
+        return left;
+    }
+
+    /**
      * RELATIONAL_OPERATOR: <, <=, >, >=
      * 
      * RelationalExpression
@@ -311,7 +387,6 @@ public class Parser {
      * @throws Throwable
      */
     private Expression relationalExpression() throws Throwable {
-        // return this.binaryExpression("additiveExpression", TypeEnum.RELATIONAL_OPERATOR);
         Expression left = additiveExpression();
 
         while (this._lookahead != null && this._lookahead.getType() == TypeEnum.RELATIONAL_OPERATOR) {
@@ -323,21 +398,6 @@ public class Parser {
         
         return left;
     } 
-
-    private Expression binaryExpression(String builderName, TypeEnum operatorToken) throws Throwable {
-       
-            Method method = this.getClass().getMethod(builderName);
-            Expression left = (Expression) method.invoke(this);
-            
-            while (this._lookahead.getType().equals(operatorToken)) {  
-                Token operator = this._eat(operatorToken);
-                Expression right = this.primaryExpression();
-                BinaryExpression binaryExpression = new BinaryExpression(TypeEnum.BINARY_EXPRESSION, operator, left, right);
-                left = binaryExpression;
-            }
-
-            return left;
-    }
 
     /**
      * AdditiveExpression
@@ -388,7 +448,11 @@ public class Parser {
     }
 
     private boolean isLiteral(TypeEnum tokenType) {
-        return tokenType.equals(TypeEnum.NUMBER) || tokenType.equals(TypeEnum.STRING);
+        return tokenType.equals(TypeEnum.NUMBER) 
+                || tokenType.equals(TypeEnum.STRING)
+                || tokenType.equals(TypeEnum.TRUE)
+                || tokenType.equals(TypeEnum.FALSE)
+                || tokenType.equals(TypeEnum.NULL);
     }
 
     private Expression paranthesizedExpression() throws Throwable{
@@ -400,19 +464,37 @@ public class Parser {
 
     /**
      * Literal
-     *  StringLiteral
-     *  NumericLiteral
+     *  : StringLiteral
+     *  | NumericLiteral
+     *  | BooleanLiteral
+     *  | NullLitearl
      * @return(Literal)
      */
-    public Literal literal() throws Exception {
+    public Literal literal() throws Throwable {
         switch(this._lookahead.getType()) {
             case STRING:
                 return this.stringLiteral();
             case NUMBER:
                 return this.numericLitearl();
+            case TRUE:
+                return this.booleanLiteral(true);
+            case FALSE:
+                return this.booleanLiteral(false);
+            case NULL:
+                return this.nullLiteral();
             default:
                 return null;
         }
+    }
+
+    private BooleanLiteral booleanLiteral(boolean value) throws Throwable{
+        this._eat(value ? TypeEnum.TRUE : TypeEnum.FALSE);
+        return new BooleanLiteral(TypeEnum.BOOLEAN_LITERAL, String.valueOf(value));
+    }
+
+    private NullLiteral nullLiteral() throws Throwable {
+        this._eat(TypeEnum.NULL);
+        return new NullLiteral(TypeEnum.NULL_LITERAL, null);
     }
 
     private StringLiteral stringLiteral() throws Exception {

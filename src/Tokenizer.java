@@ -17,6 +17,10 @@ public class Tokenizer {
 		tokenSpecs.add(new TokenSpec("^\\blet\\b", TypeEnum.LET));
 		tokenSpecs.add(new TokenSpec("^\\bif\\b", TypeEnum.IF));
 		tokenSpecs.add(new TokenSpec("^\\belse\\b", TypeEnum.ELSE));
+		tokenSpecs.add(new TokenSpec("^\\bture\\b", TypeEnum.TRUE));
+		tokenSpecs.add(new TokenSpec("^\\bfalse\\b", TypeEnum.FALSE));
+		tokenSpecs.add(new TokenSpec("^\\bnull\\b", TypeEnum.NULL));
+
 		// Whitespace
 		tokenSpecs.add(new TokenSpec("^\\s+", null));
 		
@@ -41,6 +45,8 @@ public class Tokenizer {
 		// Identifiers
 		tokenSpecs.add(new TokenSpec("^\\w+", TypeEnum.IDENTIFIER));
 
+		//Equality 
+		tokenSpecs.add((new TokenSpec("^[=!]=", TypeEnum.EQUALITY_OPERATOR)));
 
 		// Assignment Operators: *= /= += -=
 		tokenSpecs.add(new TokenSpec("^=", TypeEnum.SIMPLE_ASSIGN));
@@ -52,7 +58,11 @@ public class Tokenizer {
 
 		// Relational operators
 		tokenSpecs.add(new TokenSpec("^[><]=?", TypeEnum.RELATIONAL_OPERATOR));
-		// /^[><]=?/
+
+		//Logical operators
+		tokenSpecs.add(new TokenSpec("^&&", TypeEnum.LOGICAL_AND));
+		tokenSpecs.add(new TokenSpec("^\\|\\|", TypeEnum.LOGICAL_OR));
+
 		// String
 		tokenSpecs.add(new TokenSpec("\"[^\"]*\"", TypeEnum.STRING));
 		tokenSpecs.add(new TokenSpec("^'[^']*'", TypeEnum.STRING));
