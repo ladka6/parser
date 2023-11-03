@@ -2,6 +2,7 @@ import errors.SyntaxError;
 import java.util.ArrayList;
 import java.util.List;
 import types.*;
+import types.Expression;
 import types.literals.BooleanLiteral;
 import types.literals.Literal;
 import types.literals.NullLiteral;
@@ -68,6 +69,8 @@ public class Parser {
      *  | VariableStatement
      *  | IfStatement  
      *  | IterationStatement
+     *  | FunctionDeclaration
+     *  | ReturnStatement
      *  ;
      * @return
      * @throws Exception
@@ -82,6 +85,10 @@ public class Parser {
                 return blockStatement();
             case LET:
                 return this.variableStatement();
+            case DEF:
+                return this.functionDeclaration();
+            case RETURN:
+                return this.returnStatement();
             case WHILE:
             case DO:
             case FOR:
@@ -90,6 +97,68 @@ public class Parser {
                 return expressionStatement();
         }
     }
+    
+    /**
+     * FunctionDeclaration
+     *  : 'def' Identifier '(' OptFormalParameterList ')' BlockStatement
+     *  ;
+     * @return
+     * @throws Throwable
+     */
+    private FunctionDeclaration functionDeclaration() throws Throwable{
+        this._eat(TypeEnum.DEF);
+        Expression name = this.identifier();
+
+        this._eat(TypeEnum.LEFT_PARANTHESIS);
+
+        List<Expression> params; 
+
+        if (this._lookahead.getType() != TypeEnum.RIGTH_PARANTHESIS) {
+            params = this.formalParameterList();
+        } else {
+            params = new ArrayList<>();
+        }
+        
+        this._eat(TypeEnum.RIGTH_PARANTHESIS);
+
+        BlockStatement body = this.blockStatement();
+        
+        return new FunctionDeclaration(TypeEnum.FUNCTION_DECLARATION, name, params, body);
+    }  
+
+    /**
+     * FormalParameterList
+     *  : Identifier
+     *  | FormalParaterList ',' Identifier
+     *  ;
+     * @return
+     * @throws Throwable
+     */
+    private List<Expression> formalParameterList() throws Throwable {
+        List<Expression> params = new ArrayList<>();
+
+        do {
+            params.add(this.identifier());
+        } while(this._lookahead.getType().equals(TypeEnum.COMMA) && this._eat(TypeEnum.COMMA) != null);
+
+        return params;
+    }
+
+    /**
+     * ReturnStatement
+     *  | 'return' OptExpression
+     * @return
+     * @throws Throwable
+     */
+
+     private ReturnStatement returnStatement()throws Throwable {
+        this._eat(TypeEnum.RETURN);
+
+        Expression arguments = this._lookahead.getType() != TypeEnum.SEMICOLON ? this.expression() : null;
+        this._eat(TypeEnum.SEMICOLON);
+
+        return new ReturnStatement(TypeEnum.RETURN_STATEMENT, arguments);
+     }
 
     /**
      * IterationStatement
