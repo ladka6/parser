@@ -41,7 +41,11 @@ public class Tokenizer {
 		tokenSpecs.add(new TokenSpec("^\\}", TypeEnum.RIGHT_BRACE));
 		tokenSpecs.add(new TokenSpec("^\\(", TypeEnum.LEFT_PARANTHESIS));
 		tokenSpecs.add(new TokenSpec("^\\)", TypeEnum.RIGTH_PARANTHESIS));
-		tokenSpecs.add(new TokenSpec("^,", TypeEnum.COMMA));
+		tokenSpecs.add(new TokenSpec("^\\,", TypeEnum.COMMA));
+		tokenSpecs.add(new TokenSpec("^\\.", TypeEnum.DOT));
+		tokenSpecs.add(new TokenSpec("^\\[", TypeEnum.LEFT_SQUARED_BRACE));
+		tokenSpecs.add(new TokenSpec("^\\]", TypeEnum.RIGHT_SQUARED_BRACE));
+
 		
 		
 		// Number

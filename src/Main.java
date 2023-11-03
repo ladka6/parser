@@ -2,9 +2,13 @@ import types.Program;
 public class Main {
     public static void main(String[] args) {
         String program = """
-                def square(x) {
-                    return x * x;
-                }
+               let s = "Hello world!";
+               let i = 0;
+
+               while(i < s.length) {
+                s[i];
+                i += 1;
+               }
                 """;
 
         Parser parser = new Parser();
