@@ -634,12 +634,86 @@ public class Parser {
 
     /**
      * LeftHandSideExpression
-     *  : MemberExpression
+     *  : CallMemberExpression
      *  ;
      * @return
      */
     private Expression leftHandSidExpression() throws Throwable {
-        return this.memberExpression();
+        return this.callMemberExpression();
+    }
+
+    /**
+     * CallMemberExpression
+     *  : MemberExpression
+     *  | CallExpression
+     * @return
+     * @throws Throwable
+     */
+    private Expression callMemberExpression() throws Throwable {
+        Expression member = this.memberExpression();
+
+        if(this._lookahead.getType().equals(TypeEnum.LEFT_PARANTHESIS)) {
+            return this.callExpression(member);
+        }
+        
+        return member;
+    }
+
+    /**
+     * Generic call expression helper
+     * 
+     * CallExpression
+     *  : Calle Arguments
+     *  ;
+     * Callee
+     *  : MemberExpression
+     *  | CallExpression
+     * @param callee
+     * @return
+     * @throws Throwable
+     */
+    private Expression callExpression(Expression callee) throws Throwable {
+        Expression callExpression = new CallExpression(TypeEnum.CALL_EXPRESSION, callee, this.arguments());
+        
+        if(this._lookahead.getType().equals(TypeEnum.LEFT_PARANTHESIS)) {
+            callExpression = this.callExpression(callExpression);
+        }
+        return callExpression;
+    }
+
+    /**
+     * Arguments
+     *  : '(' OptArgumentList ')'
+     *  ;
+     * @return
+     * @throws Throwable
+     */
+    private List<Expression> arguments() throws Throwable{
+        this._eat(TypeEnum.LEFT_PARANTHESIS);
+
+        List<Expression> argumentList = this._lookahead.getType() != TypeEnum.RIGTH_PARANTHESIS 
+                                            ? this.argumentList() : new ArrayList<>();
+        
+        this._eat(TypeEnum.RIGTH_PARANTHESIS);
+
+        return argumentList;
+    }
+
+    /**
+     * ArgumentList
+     *  : AssignmentExpression
+     *  | ArgumentList ',' AssignmentExpression
+     * @return
+     * @throws Throwable
+     */
+    private List<Expression> argumentList() throws Throwable {
+        List<Expression> argumentList = new ArrayList<>();
+
+        do {
+            argumentList.add(this.assignmentExpression());
+        } while (this._lookahead.getType().equals(TypeEnum.COMMA) && this._eat(TypeEnum.COMMA) != null);
+
+        return argumentList;
     }
 
     /**
