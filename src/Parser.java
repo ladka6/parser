@@ -2,7 +2,6 @@ import errors.SyntaxError;
 import java.util.ArrayList;
 import java.util.List;
 import types.*;
-import types.Expression;
 import types.literals.BooleanLiteral;
 import types.literals.Literal;
 import types.literals.NullLiteral;
@@ -445,7 +444,7 @@ public class Parser {
     }
 
     private Expression checkValidAssignment(Expression node) throws Exception {
-        if(node.getType().equals(TypeEnum.IDENTIFIER)) {
+        if(node.getType().equals(TypeEnum.IDENTIFIER) || node.getType().equals(TypeEnum.MEMBER_EXPRESSION)) {
             return node;
         }
         throw new Exception("Invalid left-hand side in assignment expression");
@@ -635,12 +634,42 @@ public class Parser {
 
     /**
      * LeftHandSideExpression
-     *  : Identifier
+     *  : MemberExpression
      *  ;
      * @return
      */
     private Expression leftHandSidExpression() throws Throwable {
-        return this.primaryExpression();
+        return this.memberExpression();
+    }
+
+    /**
+     * MemberExpression
+     *  : PrimaryExpression
+     *  | MemberExpression '.' Identifier
+     *  | MemberExpression '[' Expression ']'
+     * @return
+     * @throws Throwable
+     */
+    private Expression memberExpression() throws Throwable {
+        Expression object = this.primaryExpression();
+        
+        while(this._lookahead.getType().equals(TypeEnum.DOT) 
+            || this._lookahead.getType().equals(TypeEnum.LEFT_SQUARED_BRACE)) {
+                 //MemberExpression '.' Identifier
+                if(this._lookahead.getType().equals(TypeEnum.DOT)) {
+                    this._eat(TypeEnum.DOT);
+                    Expression property = this.identifier();
+                    object = new MemberExpression(TypeEnum.MEMBER_EXPRESSION, false, object, property);
+                }
+                 //MemberExpression '[' Identifier ']'
+                if(this._lookahead.getType().equals(TypeEnum.LEFT_SQUARED_BRACE)) {
+                    this._eat(TypeEnum.LEFT_SQUARED_BRACE);
+                    Expression property = this.expression();
+                    this._eat(TypeEnum.RIGHT_SQUARED_BRACE);
+                    object = new MemberExpression(TypeEnum.MEMBER_EXPRESSION, true, object, property);
+                }
+            }
+            return object;
     }
 
     /**
@@ -730,7 +759,7 @@ public class Parser {
     
     private Token _eat(TypeEnum tokenType) throws Exception {
         Token token = this._lookahead;
-
+        
         if (token == null) {
             throw new Exception(
                 "Unexpected end of input, expected:" + tokenType
@@ -739,7 +768,7 @@ public class Parser {
 
         if (!token.getType().equals(tokenType)) {
             throw new Exception(
-                "Unexpected token type " + token.getType() + " , getting " + tokenType);
+                "Unexpected token type " + token + " , getting " + tokenType);
         }
 
         this._lookahead = this._tokenizer.getNextToken();
