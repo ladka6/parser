@@ -643,13 +643,13 @@ public class Parser {
         Token operator = null;
         switch(this._lookahead.getType()) {
             case ADDITIVE_OPERATOR:
-            System.out.println("ASDASD");
                 operator = this._eat(TypeEnum.ADDITIVE_OPERATOR);
                 break;
             case LOGICAL_NOT:
                 System.out.println("ASDASD");
                 operator = this._eat(TypeEnum.LOGICAL_NOT);
                 break;
+
         }
 
         if(operator != null) {
