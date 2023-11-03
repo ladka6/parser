@@ -2,13 +2,7 @@ import types.Program;
 public class Main {
     public static void main(String[] args) {
         String program = """
-               let s = "Hello world!";
-               let i = 0;
-
-               while(i < s.length) {
-                s[i];
-                i += 1;
-               }
+            console.log(x, y);
                 """;
 
         Parser parser = new Parser();
