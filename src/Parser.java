@@ -9,12 +9,6 @@ import types.literals.NumericLiteral;
 import types.literals.StringLiteral;
 
 
-
-
-
-
-
-
 public class Parser {
     private String _string;
     private Tokenizer _tokenizer; 
@@ -70,6 +64,7 @@ public class Parser {
      *  | IterationStatement
      *  | FunctionDeclaration
      *  | ReturnStatement
+     *  | ClassDeclaration
      *  ;
      * @return
      * @throws Exception
@@ -86,6 +81,8 @@ public class Parser {
                 return this.variableStatement();
             case DEF:
                 return this.functionDeclaration();
+            case CLASS:
+                return this.classDeclaration();
             case RETURN:
                 return this.returnStatement();
             case WHILE:
@@ -96,7 +93,37 @@ public class Parser {
                 return expressionStatement();
         }
     }
-    
+
+    /**
+     * ClassDeclaration
+     *  : 'class' Identifier OptClassExtends BlockStatement
+     *  ; 
+     * @return
+     * @throws Throwable
+     */
+    private ClassDeclaration classDeclaration() throws Throwable {
+        this._eat(TypeEnum.CLASS);
+
+        Identifier id = this.identifier();
+
+        Identifier superClass = this._lookahead.getType().equals(TypeEnum.EXTENDS) 
+                                    ? this.classExtends() : null;
+        
+        BlockStatement body = this.blockStatement();
+
+        return new ClassDeclaration(TypeEnum.CLASS_DECLARATION, id, superClass, body);
+    }
+
+    /**
+     * ClassExtends
+     *  : 'extends' Identifier
+     * @return
+     * @throws Throwable
+     */
+    private Identifier classExtends() throws Throwable {
+        this._eat(TypeEnum.IDENTIFIER);
+        return this.identifier();
+    }
     /**
      * FunctionDeclaration
      *  : 'def' Identifier '(' OptFormalParameterList ')' BlockStatement
@@ -438,7 +465,7 @@ public class Parser {
      *  ;
      * @return
      */
-    private Expression identifier() throws Exception {
+    private Identifier identifier() throws Exception {
         String name = this._eat(TypeEnum.IDENTIFIER).getValue();
         return new Identifier(TypeEnum.IDENTIFIER, name);
     }
@@ -650,6 +677,10 @@ public class Parser {
      * @throws Throwable
      */
     private Expression callMemberExpression() throws Throwable {
+        if(this._lookahead.getType().equals(TypeEnum.SUPER)) {
+            return this.callExpression(this.superExpression());
+        }
+
         Expression member = this.memberExpression();
 
         if(this._lookahead.getType().equals(TypeEnum.LEFT_PARANTHESIS)) {
@@ -751,6 +782,9 @@ public class Parser {
      *  : Literal
      *  | ParanthesizedExpression
      *  | Identifier
+     *  | ThisExpression
+     *  | NewExpression
+     *  ;
      * @return
      * @throws Throwable
      */
@@ -763,9 +797,42 @@ public class Parser {
                 return this.paranthesizedExpression();
             case IDENTIFIER:
                 return this.identifier();
+            case THIS:
+                return this.thisExpression();
+            case NEW:
+                return this.newExpression();
             default:
                 return this.leftHandSidExpression();
         }
+    }
+
+    /**
+     * NewExpression
+     *  : 'new' MemberExpression Arguments
+     *  ;
+     * @return
+     * @throws Throwable
+     */
+    private NewExpression newExpression() throws Throwable {
+        this._eat(TypeEnum.NEW);
+        return new NewExpression(TypeEnum.NEW_EXPRESSION,this.memberExpression(),this.arguments());
+    }
+
+    /**
+     * ThisExpression
+     *  : 'this'
+     *  ;
+     * @return
+     * @throws Throwable
+     */
+    private ThisExpression thisExpression() throws Throwable {
+        this._eat(TypeEnum.THIS);
+        return new ThisExpression(TypeEnum.THIS_EXPRESSION);
+    }
+
+    private SuperExpression superExpression() throws Throwable {
+        this._eat(TypeEnum.SUPER);
+        return new SuperExpression(TypeEnum.SUPER_EXPRESSION);
     }
 
     private boolean isLiteral(TypeEnum tokenType) {

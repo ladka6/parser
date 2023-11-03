@@ -25,6 +25,11 @@ public class Tokenizer {
 		tokenSpecs.add(new TokenSpec("^\\bfor\\b", TypeEnum.FOR));
 		tokenSpecs.add(new TokenSpec("^\\bdef\\b", TypeEnum.DEF));
 		tokenSpecs.add(new TokenSpec("^\\breturn\\b", TypeEnum.RETURN));
+		tokenSpecs.add(new TokenSpec("^\\bclass\\b", TypeEnum.CLASS));
+		tokenSpecs.add(new TokenSpec("^\\bextends\\b", TypeEnum.EXTENDS));
+		tokenSpecs.add(new TokenSpec("^\\bsuper\\b", TypeEnum.SUPER));
+		tokenSpecs.add(new TokenSpec("^\\bnew\\b", TypeEnum.NEW));
+		tokenSpecs.add(new TokenSpec("^\\bthis\\b", TypeEnum.THIS));
 
 		// Whitespace
 		tokenSpecs.add(new TokenSpec("^\\s+", null));
@@ -46,8 +51,6 @@ public class Tokenizer {
 		tokenSpecs.add(new TokenSpec("^\\[", TypeEnum.LEFT_SQUARED_BRACE));
 		tokenSpecs.add(new TokenSpec("^\\]", TypeEnum.RIGHT_SQUARED_BRACE));
 
-		
-		
 		// Number
 		tokenSpecs.add(new TokenSpec("^\\d+", TypeEnum.NUMBER));
 		

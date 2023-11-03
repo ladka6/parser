@@ -2,7 +2,17 @@ import types.Program;
 public class Main {
     public static void main(String[] args) {
         String program = """
-            console.log(x, y);
+            class Point {
+                def constructor(x, y) {
+                  this.x = x;
+                  this.y = y;
+                }
+          
+                def calc() {
+                  return this.x + this.y;
+                }
+              }
+          
                 """;
 
         Parser parser = new Parser();
