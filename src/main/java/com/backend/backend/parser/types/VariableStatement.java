@@ -2,15 +2,27 @@ package com.backend.backend.parser.types;
 
 import java.util.List;
 
+
 import org.json.JSONObject;
 
-public class VariableStatement implements Expression{
+public class VariableStatement implements Expression {
+
     private TypeEnum type;
+    private String typeAnnotation;
     private List<VariableDeclaration> declarations;
 
-    public VariableStatement(TypeEnum type, List<VariableDeclaration> declarations) {
+    public VariableStatement(TypeEnum type, String typeAnnotation, List<VariableDeclaration> declarations) {
         this.type = type;
         this.declarations = declarations;
+        this.typeAnnotation = typeAnnotation;
+    }
+
+    public String getTypeAnnotation() {
+        return this.typeAnnotation;
+    }
+
+    public void setTypeAnnotation(String typeAnnotation) {
+        this.typeAnnotation = typeAnnotation;
     }
 
     @Override
@@ -32,11 +44,14 @@ public class VariableStatement implements Expression{
 
     @Override
     public String toString() {
+
         JSONObject json = new JSONObject();
         json.put("type", getType());
         json.put("declarations", getDeclarations());
 
         return json.toString();
+
+
     }
-    
+
 }
