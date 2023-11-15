@@ -1,5 +1,6 @@
 package com.backend.backend.parser.types;
 
+import org.json.JSONObject;
 
 public class ExpressionStatement implements Expression{
     private TypeEnum type;
@@ -31,9 +32,10 @@ public class ExpressionStatement implements Expression{
 
     @Override
     public String toString() {
-        return "{" +
-            " type='" + getType() + "'" +
-            ", literal='" + getLiteral() + "'" +
-            "}";
+        JSONObject json = new JSONObject();
+        json.put("type", getType());
+        json.put("literal", getLiteral());
+
+        return json.toString();
     }
 }

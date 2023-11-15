@@ -1,5 +1,7 @@
 package com.backend.backend.parser.types;
 
+import org.json.JSONObject;
+
 public class AssignmentExpression implements Expression {
     private TypeEnum type;
     private Token operator;
@@ -47,14 +49,15 @@ public class AssignmentExpression implements Expression {
         this.right = right;
     }
 
-    @Override
+        @Override
     public String toString() {
-        return "{" +
-            " type='" + getType() + "'" +
-            ", operator='" + getOperator() + "'" +
-            ", left='" + getLeft() + "'" +
-            ", right='" + getRight() + "'" +
-            "}";
+        JSONObject json = new JSONObject();
+        json.put("type", getType());
+        json.put("operator", getOperator());
+        json.put("left", getLeft());
+        json.put("right", getRight());
+
+        return json.toString();
     }
 
 }

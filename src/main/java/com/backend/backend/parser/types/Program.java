@@ -2,6 +2,8 @@ package com.backend.backend.parser.types;
 
 import java.util.List;
 
+import org.json.JSONObject;
+
 public class Program implements Expression {
     private TypeEnum type;
     private List<Expression> body;
@@ -29,17 +31,13 @@ public class Program implements Expression {
     }
 
 
-    @Override
+            @Override
     public String toString() {
-        String stringBuilder = "{\"type\" :" +
-                "\""+getType()+ "\"," +
-                "{\"body\" :" +
-                getBody();
-        return stringBuilder;
-        //return "{" +
-        //    " type='" + getType() + "'" +
-        //    ", body='" + getBody() + "'" +
-        //    "}";
+        JSONObject json = new JSONObject();
+        json.put("type", getType());
+        json.put("body", getBody());
+
+        return json.toString();
     }
 
 }

@@ -1,5 +1,7 @@
 package com.backend.backend.parser.types;
 
+import org.json.JSONObject;
+
 public class IfStatement implements Expression {
     private TypeEnum type;
     private Expression test;
@@ -46,14 +48,15 @@ public class IfStatement implements Expression {
         this.alternate = alternate;
     }
 
-    @Override
+        @Override
     public String toString() {
-        return "{" +
-            " type='" + getType() + "'" +
-            ", test='" + getTest() + "'" +
-            ", consequent='" + getConsequent() + "'" +
-            ", alternate='" + getAlternate() + "'" +
-            "}";
+        JSONObject json = new JSONObject();
+        json.put("type", getType());
+        json.put("test", getTest());
+        json.put("consequent", getConsequent());
+        json.put("alternate", getAlternate());
+
+        return json.toString();
     }
 
 }

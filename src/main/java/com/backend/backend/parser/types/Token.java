@@ -1,5 +1,7 @@
 package com.backend.backend.parser.types;
 
+import org.json.JSONObject;
+
 public class Token {
     private TypeEnum type;
     private String value;
@@ -31,10 +33,11 @@ public class Token {
 
     @Override
     public String toString() {
-        return "{" +
-            " type='" + getType() + "'" +
-            ", value='" + getValue() + "'" +
-            "}";
+        JSONObject json = new JSONObject();
+        json.put("type", getType());
+        json.put("value", getValue());
+
+        return json.toString();
     }
 
 }
