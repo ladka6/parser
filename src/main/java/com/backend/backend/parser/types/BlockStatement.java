@@ -2,6 +2,8 @@ package com.backend.backend.parser.types;
 
 import java.util.List;
 
+import org.json.JSONObject;
+
 public class BlockStatement implements Expression{
     private TypeEnum type;
     private List<Expression> body;
@@ -33,10 +35,11 @@ public class BlockStatement implements Expression{
 
     @Override
     public String toString() {
-        return "{" +
-            " type='" + getType() + "'" +
-            ", body='" + getBody() + "'" +
-            "}";
+        JSONObject json = new JSONObject();
+        json.put("type", getType());
+        json.put("body", getBody());
+
+        return json.toString();
     }
 
 }

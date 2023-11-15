@@ -1,5 +1,7 @@
 package com.backend.backend.parser.types;
 
+import org.json.JSONObject;
+
 public class DoWhileStatement implements Expression{
     private TypeEnum type;
     private Expression body;
@@ -36,13 +38,14 @@ public class DoWhileStatement implements Expression{
         this.test = test;
     }
 
-    @Override
+        @Override
     public String toString() {
-        return "{" +
-            " type='" + getType() + "'" +
-            ", body='" + getBody() + "'" +
-            ", test='" + getTest() + "'" +
-            "}";
+        JSONObject json = new JSONObject();
+        json.put("type", getType());
+        json.put("body", getBody());
+        json.put("test", getTest());
+
+        return json.toString();
     }
 
 }

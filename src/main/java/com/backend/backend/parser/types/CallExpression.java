@@ -1,6 +1,8 @@
 package com.backend.backend.parser.types;
 import java.util.List;
 
+import org.json.JSONObject;
+
 public class CallExpression implements Expression {
     private TypeEnum type;
     private Expression calle;
@@ -37,13 +39,14 @@ public class CallExpression implements Expression {
         this.arguments = arguments;
     }
 
-    @Override
+        @Override
     public String toString() {
-        return "{" +
-            " type='" + getType() + "'" +
-            ", calle='" + getCalle() + "'" +
-            ", arguments='" + getArguments() + "'" +
-            "}";
+        JSONObject json = new JSONObject();
+        json.put("type", getType());
+        json.put("calle", getCalle());
+        json.put("arguments", getArguments());
+
+        return json.toString();
     }
 
 }

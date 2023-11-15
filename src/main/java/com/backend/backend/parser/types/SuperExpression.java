@@ -1,5 +1,7 @@
 package com.backend.backend.parser.types;
 
+import org.json.JSONObject;
+
 public class SuperExpression implements Expression {
     private TypeEnum type;
 
@@ -16,11 +18,13 @@ public class SuperExpression implements Expression {
         this.type = type;
     }
 
+    
     @Override
     public String toString() {
-        return "{" +
-            " type='" + getType() + "'" +
-            "}";
+        JSONObject json = new JSONObject();
+        json.put("type", getType());
+
+        return json.toString();
     }
 
 }

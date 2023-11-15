@@ -1,5 +1,7 @@
 package com.backend.backend.parser.types;
 
+import org.json.JSONObject;
+
 import com.backend.backend.parser.types.literals.Literal;
 
 public class AdditiveExpression {
@@ -49,12 +51,13 @@ public class AdditiveExpression {
 
     @Override
     public String toString() {
-        return "{" +
-            " type='" + getType() + "'" +
-            ", operator='" + getOperator() + "'" +
-            ", left='" + getLeft() + "'" +
-            ", right='" + getRight() + "'" +
-            "}";
+        JSONObject json = new JSONObject();
+        json.put("type", getType());
+        json.put("operator", getOperator());
+        json.put("left", getLeft());
+        json.put("right", getRight());
+        
+        return json.toString();
     }
 
 }
