@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.CommandLineRunner;
 
 @SpringBootApplication
-public class BackendApplication implements CommandLineRunner{
+public class BackendApplication implements CommandLineRunner {
 
 	@Resource
 	FilesStorageService storageService;
@@ -18,7 +18,7 @@ public class BackendApplication implements CommandLineRunner{
 
 	@Override
 	public void run(String... arg) throws Exception {
-//    storageService.deleteAll();
+		// storageService.deleteAll();
 		storageService.init();
 	}
 }
