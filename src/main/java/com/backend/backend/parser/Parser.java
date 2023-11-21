@@ -77,9 +77,7 @@ public class Parser {
             case LEFT_BRACE:
                 return blockStatement();
             case IDENTIFIER:
-                return this.variableStatement();
-            case DEF:
-                return this.functionDeclaration();
+                return this.functionOrVariable();
             case CLASS:
                 return this.classDeclaration();
             case RETURN:
@@ -127,6 +125,16 @@ public class Parser {
         return this.identifier();
     }
 
+    private Expression functionOrVariable() throws Throwable {
+        if (this._tokenizer.lookTwoAhead().getType().equals(TypeEnum.LEFT_PARANTHESIS)) {
+            return this.functionDeclaration(false);
+        } else if (this._tokenizer.lookOneAhead().getType().equals(TypeEnum.LEFT_PARANTHESIS)) {
+            return this.functionDeclaration(true);
+        } else {
+            return this.variableStatement();
+        }
+    }
+
     /**
      * FunctionDeclaration
      * : 'def' Identifier '(' OptFormalParameterList ')' BlockStatement
@@ -135,8 +143,10 @@ public class Parser {
      * @return
      * @throws Throwable
      */
-    private FunctionDeclaration functionDeclaration() throws Throwable {
-        this._eat(TypeEnum.DEF);
+    private FunctionDeclaration functionDeclaration(boolean isConstructor) throws Throwable {
+        if (!isConstructor) {
+            String type = this._eat(TypeEnum.IDENTIFIER).getValue();
+        }
         Expression name = this.identifier();
 
         this._eat(TypeEnum.LEFT_PARANTHESIS);
@@ -169,7 +179,10 @@ public class Parser {
         List<Expression> params = new ArrayList<>();
 
         do {
-            params.add(this.identifier());
+            String variableType = this._eat(TypeEnum.IDENTIFIER).getValue();
+            String variableName = this._eat(TypeEnum.IDENTIFIER).getValue();
+            FunctionParams functionParams = new FunctionParams(TypeEnum.IDENTIFIER, variableName, variableType);
+            params.add(functionParams);
         } while (this._lookahead.getType().equals(TypeEnum.COMMA) && this._eat(TypeEnum.COMMA) != null);
 
         return params;
@@ -208,6 +221,8 @@ public class Parser {
                 return this.doWhileStatement();
             case FOR:
                 return this.forStatement();
+            default:
+                break;
         }
         throw new SyntaxError("Error");
     }
@@ -682,7 +697,6 @@ public class Parser {
                 operator = this._eat(TypeEnum.ADDITIVE_OPERATOR);
                 break;
             case LOGICAL_NOT:
-                System.out.println("ASDASD");
                 operator = this._eat(TypeEnum.LOGICAL_NOT);
                 break;
 
@@ -957,7 +971,6 @@ public class Parser {
         }
 
         this._lookahead = this._tokenizer.getNextToken();
-        // System.out.println(this._lookahead);
         return token;
     }
 

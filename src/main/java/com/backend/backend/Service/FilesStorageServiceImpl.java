@@ -45,7 +45,6 @@ public class FilesStorageServiceImpl implements FilesStorageService {
     public Resource load(String filename) {
         try {
             Path file = root.resolve(filename);
-            System.out.println(file);
             Resource resource = new UrlResource(file.toUri());
 
             if (resource.exists() || resource.isReadable()) {

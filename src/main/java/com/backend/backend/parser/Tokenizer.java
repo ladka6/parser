@@ -8,14 +8,13 @@ import java.util.regex.Pattern;
 import com.backend.backend.parser.types.Token;
 import com.backend.backend.parser.types.TypeEnum;
 
-
 public class Tokenizer {
 	private String _string;
 	private int cursor;
 
 	public static List<TokenSpec> getTokenSpec() {
 		List<TokenSpec> tokenSpecs = new ArrayList<>();
-		//Keywords:
+		// Keywords:
 		tokenSpecs.add(new TokenSpec("^\\blet\\b", TypeEnum.LET));
 		tokenSpecs.add(new TokenSpec("^\\bif\\b", TypeEnum.IF));
 		tokenSpecs.add(new TokenSpec("^\\belse\\b", TypeEnum.ELSE));
@@ -35,13 +34,13 @@ public class Tokenizer {
 
 		// Whitespace
 		tokenSpecs.add(new TokenSpec("^\\s+", null));
-		
+
 		// Skip single-line comments
 		tokenSpecs.add(new TokenSpec("^//.*", null));
-		
+
 		// MultiLine /* */
 		tokenSpecs.add(new TokenSpec("^/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/", null));
-		
+
 		// Symbol delimiters
 		tokenSpecs.add(new TokenSpec("^;", TypeEnum.SEMICOLON));
 		tokenSpecs.add(new TokenSpec("^\\{", TypeEnum.LEFT_BRACE));
@@ -55,11 +54,11 @@ public class Tokenizer {
 
 		// Number
 		tokenSpecs.add(new TokenSpec("^\\d+", TypeEnum.NUMBER));
-		
+
 		// Identifiers
 		tokenSpecs.add(new TokenSpec("^\\w+", TypeEnum.IDENTIFIER));
 
-		//Equality 
+		// Equality
 		tokenSpecs.add((new TokenSpec("^[=!]=", TypeEnum.EQUALITY_OPERATOR)));
 
 		// Assignment Operators: *= /= += -=
@@ -73,7 +72,7 @@ public class Tokenizer {
 		// Relational operators
 		tokenSpecs.add(new TokenSpec("^[><]=?", TypeEnum.RELATIONAL_OPERATOR));
 
-		//Logical operators
+		// Logical operators
 		tokenSpecs.add(new TokenSpec("^&&", TypeEnum.LOGICAL_AND));
 		tokenSpecs.add(new TokenSpec("^\\|\\|", TypeEnum.LOGICAL_OR));
 		tokenSpecs.add(new TokenSpec("^!", TypeEnum.LOGICAL_NOT));
@@ -84,7 +83,6 @@ public class Tokenizer {
 
 		return tokenSpecs;
 	}
-	
 
 	public void init(String string) {
 		this.cursor = 0;
@@ -107,32 +105,47 @@ public class Tokenizer {
 			return null;
 		}
 	}
-	
+
 	public Token getNextToken() throws SyntaxError {
-		if (!this.hasMoreTokens()) {			
+		if (!this.hasMoreTokens()) {
 			return null;
 		}
-		
+
 		String string = this._string.substring(this.cursor);
-		
+
 		for (TokenSpec tokenSpec : getTokenSpec()) {
 			String regex = tokenSpec.pattern.pattern();
 			TypeEnum tokenType = tokenSpec.type;
-			
+
 			String tokenValue = this._match(regex, string);
-			
-			if(tokenValue == null) {
+
+			if (tokenValue == null) {
 				continue;
 			}
-			
+
 			if (tokenType == null) {
-                return this.getNextToken();
-            }
-			
-			return new Token(tokenType,tokenValue);
+				return this.getNextToken();
+			}
+
+			return new Token(tokenType, tokenValue);
 		}
 
 		return null;
 
+	}
+
+	public Token lookTwoAhead() throws SyntaxError {
+		int currentCursor = this.cursor;
+		Token token = this.getNextToken();
+		Token nextToken = this.getNextToken();
+		this.cursor = currentCursor;
+		return nextToken;
+	}
+
+	public Token lookOneAhead() throws SyntaxError {
+		int currentCursor = this.cursor;
+		Token token = this.getNextToken();
+		this.cursor = currentCursor;
+		return token;
 	}
 }
