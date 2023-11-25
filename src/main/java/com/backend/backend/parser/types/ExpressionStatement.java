@@ -2,9 +2,9 @@ package com.backend.backend.parser.types;
 
 public class ExpressionStatement implements Expression {
     private TypeEnum type;
-    private BinaryExpression binaryExpression;
+    private Expression binaryExpression;
 
-    public ExpressionStatement(TypeEnum type, BinaryExpression binaryExpression) {
+    public ExpressionStatement(TypeEnum type, Expression binaryExpression) {
         this.type = type;
         this.binaryExpression = binaryExpression;
     }
@@ -17,11 +17,11 @@ public class ExpressionStatement implements Expression {
         this.type = type;
     }
 
-    public BinaryExpression getBinaryExpression() {
+    public Expression getBinaryExpression() {
         return this.binaryExpression;
     }
 
-    public void setBinaryExpression(BinaryExpression binaryExpression) {
+    public void setBinaryExpression(Expression binaryExpression) {
         this.binaryExpression = binaryExpression;
     }
 
