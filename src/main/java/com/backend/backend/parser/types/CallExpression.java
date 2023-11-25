@@ -40,12 +40,11 @@ public class CallExpression implements Expression {
 
     @Override
     public String toString() {
-        JSONObject json = new JSONObject();
-        json.put("type", getType());
-        json.put("calle", getCalle());
-        json.put("arguments", getArguments());
-
-        return json.toString();
+        return "{" +
+                " type='" + getType() + "'" +
+                ", calle='" + getCalle() + "'" +
+                ", arguments='" + getArguments() + "'" +
+                "}";
     }
 
 }

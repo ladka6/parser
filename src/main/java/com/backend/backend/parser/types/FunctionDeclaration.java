@@ -4,15 +4,26 @@ import java.util.List;
 
 public class FunctionDeclaration implements Expression {
     private TypeEnum type;
+    private String typeAnnotation;
     private Expression name;
     private List<Expression> params;
     private BlockStatement body;
 
-    public FunctionDeclaration(TypeEnum type, Expression name, List<Expression> params, BlockStatement body) {
+    public FunctionDeclaration(TypeEnum type, String typeAnnotation, Expression name, List<Expression> params,
+            BlockStatement body) {
         this.type = type;
+        this.typeAnnotation = typeAnnotation;
         this.name = name;
         this.params = params;
         this.body = body;
+    }
+
+    public String getTypeAnnotation() {
+        return this.typeAnnotation;
+    }
+
+    public void setTypeAnnotation(String typeAnnotation) {
+        this.typeAnnotation = typeAnnotation;
     }
 
     @Override
@@ -52,6 +63,7 @@ public class FunctionDeclaration implements Expression {
     public String toString() {
         return "{" +
                 " type='" + getType() + "'" +
+                ", typeAnnotation='" + getTypeAnnotation() + "'" +
                 ", name='" + getName() + "'" +
                 ", params='" + getParams() + "'" +
                 ", body='" + getBody() + "'" +

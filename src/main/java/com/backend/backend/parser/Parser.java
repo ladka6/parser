@@ -1,21 +1,87 @@
 package com.backend.backend.parser;
 
-import com.backend.backend.exception.SyntaxError;
 import java.util.ArrayList;
 import java.util.List;
-import com.backend.backend.parser.types.*;
-import com.backend.backend.parser.types.literals.*;
+import java.util.Arrays;
+import com.backend.backend.exception.SyntaxError;
+import com.backend.backend.parser.types.AssignmentExpression;
+import com.backend.backend.parser.types.BinaryExpression;
+import com.backend.backend.parser.types.BlockStatement;
+import com.backend.backend.parser.types.CallExpression;
+import com.backend.backend.parser.types.ClassDeclaration;
+import com.backend.backend.parser.types.DoWhileStatement;
+import com.backend.backend.parser.types.EmptyStatement;
+import com.backend.backend.parser.types.Expression;
+import com.backend.backend.parser.types.ExpressionStatement;
+import com.backend.backend.parser.types.ForStatement;
+import com.backend.backend.parser.types.FunctionDeclaration;
+import com.backend.backend.parser.types.FunctionParams;
+import com.backend.backend.parser.types.Identifier;
+import com.backend.backend.parser.types.IfStatement;
+import com.backend.backend.parser.types.ImportStatement;
+import com.backend.backend.parser.types.LogicalExpression;
+import com.backend.backend.parser.types.MemberExpression;
+import com.backend.backend.parser.types.NewExpression;
+import com.backend.backend.parser.types.Program;
+import com.backend.backend.parser.types.ReturnStatement;
+import com.backend.backend.parser.types.SuperExpression;
+import com.backend.backend.parser.types.ThisExpression;
+import com.backend.backend.parser.types.Token;
+import com.backend.backend.parser.types.TypeEnum;
+import com.backend.backend.parser.types.UnaryExpression;
+import com.backend.backend.parser.types.VariableDeclaration;
+import com.backend.backend.parser.types.VariableStatement;
+import com.backend.backend.parser.types.WhileStatement;
+import com.backend.backend.parser.types.literals.BooleanLiteral;
+import com.backend.backend.parser.types.literals.Literal;
+import com.backend.backend.parser.types.literals.NullLiteral;
+import com.backend.backend.parser.types.literals.NumericLiteral;
+import com.backend.backend.parser.types.literals.StringLiteral;
 
 public class Parser {
     private String _string;
     private Tokenizer _tokenizer;
     private Token _lookahead;
 
+    private List<String> paths = new ArrayList<>() {
+        {
+            add("String");
+            add("int");
+            add("boolean");
+            add("float");
+            add("double");
+        }
+    };
+
+    private List<Expression> realList = new ArrayList<>();
+
     public Parser() {
         this._tokenizer = new Tokenizer();
     }
 
+    private void setPaths(String path) {
+        this.paths.add(path);
+    }
+
+    private List<String> getPaths() {
+        return this.paths;
+    }
+
+    public List<Expression> getStatementList() {
+        return this.realList;
+    }
+
+    public void setStatementList(Expression statement) {
+        this.realList.add(statement);
+    }
+
+    private void resetStatementList() {
+        this.realList.clear();
+    }
+
     public Program parse(String string) throws Throwable {
+        this.resetStatementList();
+
         this._string = string;
         this._tokenizer.init(string);
 
@@ -43,10 +109,16 @@ public class Parser {
      */
     private List<Expression> statementList(TypeEnum stopLookahead) throws Throwable {
         List<Expression> statementList = new ArrayList<>();
-        statementList.add(this.statement());
+        Expression firstStatement = this.statement();
+        setStatementList(firstStatement);
+        statementList.add(firstStatement);
+        // statementList.add(this.statement());
 
         while (this._lookahead != null && this._lookahead.getType() != stopLookahead) {
-            statementList.add(this.statement());
+            Expression statement = this.statement();
+            setStatementList(statement);
+            statementList.add(statement);
+
         }
 
         return statementList;
@@ -70,7 +142,6 @@ public class Parser {
      * @throws Exception
      */
     private Expression statement() throws Throwable {
-
         switch (this._lookahead.getType()) {
             case IMPORT_STATEMENT:
                 return this.importStatement();
@@ -95,13 +166,8 @@ public class Parser {
         }
     }
 
-    private Expression importStatement() throws Throwable {
-        List<String> paths = new ArrayList<>();
-
-        // do {
-        // String path = this._eat(TypeEnum.IMPORT_STATEMENT).getValue();
-        // } while (this._lookahead.getType().equals(TypeEnum.COMMA) &&
-        // this._eat(TypeEnum.COMMA) != null);
+    private ImportStatement importStatement() throws Throwable {
+        List<String> imports = new ArrayList<>();
 
         while (this._lookahead != null && this._lookahead.getType().equals(TypeEnum.IMPORT_STATEMENT)) {
             String path = this._eat(TypeEnum.IMPORT_STATEMENT).getValue();
@@ -109,9 +175,12 @@ public class Parser {
             String[] importStatementSplitted = splitted[1].split("\\.");
 
             this._eat(TypeEnum.SEMICOLON);
-            paths.add(importStatementSplitted[importStatementSplitted.length - 1]);
+            String current = importStatementSplitted[importStatementSplitted.length - 1];
+            imports.add(current);
+            this.setPaths(current);
         }
-        return new ImportStatement(paths);
+
+        return new ImportStatement(imports);
     }
 
     /**
@@ -167,13 +236,20 @@ public class Parser {
      * @throws Throwable
      */
     private FunctionDeclaration functionDeclaration(boolean isConstructor) throws Throwable {
+        String type = null;
+
         if (!isConstructor) {
-            String type = this._eat(TypeEnum.IDENTIFIER).getValue();
+            type = this._eat(TypeEnum.IDENTIFIER).getValue();
+
+            if (!this.getPaths().contains(type)) {
+                throw new SyntaxError("Unspported function return type");
+            }
+
         }
+
         Expression name = this.identifier();
 
         this._eat(TypeEnum.LEFT_PARANTHESIS);
-
         List<Expression> params;
 
         if (this._lookahead.getType() != TypeEnum.RIGTH_PARANTHESIS) {
@@ -183,10 +259,9 @@ public class Parser {
         }
 
         this._eat(TypeEnum.RIGTH_PARANTHESIS);
-
         BlockStatement body = this.blockStatement();
 
-        return new FunctionDeclaration(TypeEnum.FUNCTION_DECLARATION, name, params, body);
+        return new FunctionDeclaration(TypeEnum.FUNCTION_DECLARATION, type, name, params, body);
     }
 
     /**
@@ -249,6 +324,8 @@ public class Parser {
         }
         throw new SyntaxError("Error");
     }
+
+    // TODO implement types in loops
 
     /**
      * WhileStatement
@@ -376,15 +453,29 @@ public class Parser {
 
     /**
      * VariableStatementInit
-     * : Type opt'[' ']' VariableDeclarationList
+     * : Type VariableDeclarationList
+     * : VariableDeclarationList
      * ;
      * 
      * @return
      * @throws Throwable
      */
     private VariableStatement variableStatementInit() throws Throwable {
-        String type = this._eat(TypeEnum.IDENTIFIER).getValue();
-        List<VariableDeclaration> declarations = this.variableDeclarationList();
+        List<VariableDeclaration> declarations = new ArrayList<>();
+        String type = null;
+
+        if (!this._tokenizer.lookOneAhead().getType().equals(TypeEnum.IDENTIFIER)) {
+            VariableDeclaration declaration = this.variableDeclaration();
+            declarations.add(declaration);
+        } else {
+            type = this._eat(TypeEnum.IDENTIFIER).getValue();
+
+            if (!this.getPaths().contains(type)) {
+                throw new SyntaxError("Unsupported variable type");
+            }
+            declarations = this.variableDeclarationList();
+        }
+
         return new VariableStatement(TypeEnum.VARIABLE_STATEMENT, type, declarations);
     }
 
@@ -979,7 +1070,7 @@ public class Parser {
         return new NumericLiteral(TypeEnum.NUMBER, token.getValue());
     }
 
-    private Token _eat(TypeEnum tokenType) throws Exception {
+    private Token _eat(TypeEnum tokenType) throws SyntaxError, Exception {
         Token token = this._lookahead;
 
         if (token == null) {
