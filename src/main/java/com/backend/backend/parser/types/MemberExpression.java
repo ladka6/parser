@@ -1,8 +1,6 @@
 package com.backend.backend.parser.types;
 
-import org.json.JSONObject;
-
-public class MemberExpression implements Expression{
+public class MemberExpression implements Expression {
     private TypeEnum type;
     private Boolean computed;
     private Expression object;
@@ -54,13 +52,12 @@ public class MemberExpression implements Expression{
 
     @Override
     public String toString() {
-        JSONObject json = new JSONObject();
-        json.put("type", getType());
-        json.put("computed", isComputed());
-        json.put("object", getObject());
-        json.put("property", getProperty());
-
-        return json.toString();
+        return "{" +
+                " type='" + getType() + "'" +
+                ", computed='" + isComputed() + "'" +
+                ", object='" + getObject() + "'" +
+                ", property='" + getProperty() + "'" +
+                "}";
     }
 
 }

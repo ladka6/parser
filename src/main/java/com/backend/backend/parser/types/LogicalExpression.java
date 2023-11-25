@@ -1,7 +1,5 @@
 package com.backend.backend.parser.types;
 
-import org.json.JSONObject;
-
 public class LogicalExpression implements Expression {
     private TypeEnum type;
     private Token operator;
@@ -48,15 +46,14 @@ public class LogicalExpression implements Expression {
         this.right = right;
     }
 
-        @Override
+    @Override
     public String toString() {
-        JSONObject json = new JSONObject();
-        json.put("type", getType());
-        json.put("operator", getOperator());
-        json.put("left", getLeft());
-        json.put("right", getRight());
-
-        return json.toString();
+        return "{" +
+                " type='" + getType() + "'" +
+                ", operator='" + getOperator() + "'" +
+                ", left='" + getLeft() + "'" +
+                ", right='" + getRight() + "'" +
+                "}";
     }
 
 }

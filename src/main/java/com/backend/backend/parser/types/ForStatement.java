@@ -1,8 +1,6 @@
 package com.backend.backend.parser.types;
 
-import org.json.JSONObject;
-
-public class ForStatement implements Expression{
+public class ForStatement implements Expression {
     private TypeEnum type;
     private Expression init;
     private Expression test;
@@ -58,16 +56,15 @@ public class ForStatement implements Expression{
         this.body = body;
     }
 
-        @Override
+    @Override
     public String toString() {
-        JSONObject json = new JSONObject();
-        json.put("type", getType());
-        json.put("init", getInit());
-        json.put("test", getTest());
-        json.put("update", getUpdate());
-        json.put("body", getBody());
-
-        return json.toString();
+        return "{" +
+                " type='" + getType() + "'" +
+                ", init='" + getInit() + "'" +
+                ", test='" + getTest() + "'" +
+                ", update='" + getUpdate() + "'" +
+                ", body='" + getBody() + "'" +
+                "}";
     }
 
 }

@@ -60,8 +60,8 @@ public enum TypeEnum {
     THIS_EXPRESSION("THIS_EXPRESSION"),
     SUPER_EXPRESSION("SUPER_EXPRESSION"),
     NEW_EXPRESSION("NEW_EXPRESSION"),
+    IMPORT_STATEMENT("IMPORT_STATEMENT"),
     PROGRAM("PROGRAM");
-
 
     private final String representation;
 

@@ -14,6 +14,8 @@ public class Tokenizer {
 
 	public static List<TokenSpec> getTokenSpec() {
 		List<TokenSpec> tokenSpecs = new ArrayList<>();
+		// Import statement:
+		tokenSpecs.add(new TokenSpec("^import\\s+(\\w+(\\.\\w+)*)", TypeEnum.IMPORT_STATEMENT));
 		// Keywords:
 		tokenSpecs.add(new TokenSpec("^\\blet\\b", TypeEnum.LET));
 		tokenSpecs.add(new TokenSpec("^\\bif\\b", TypeEnum.IF));

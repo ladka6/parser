@@ -1,20 +1,16 @@
 package com.backend.backend.parser.types.literals;
 
-import org.json.JSONObject;
-
 import com.backend.backend.parser.types.Expression;
 import com.backend.backend.parser.types.TypeEnum;
 
-public class Literal  implements Expression {
+public class Literal implements Expression {
     private TypeEnum type;
     private String value;
-
 
     public Literal(TypeEnum type, String value) {
         this.type = type;
         this.value = value;
     }
-
 
     @Override
     public TypeEnum getType() {
@@ -33,14 +29,12 @@ public class Literal  implements Expression {
         this.value = value;
     }
 
-
-        @Override
+    @Override
     public String toString() {
-        JSONObject json = new JSONObject();
-        json.put("type", getType());
-        json.put("value", getValue());
-
-        return json.toString();
+        return "{" +
+                " type='" + getType() + "'" +
+                ", value='" + getValue() + "'" +
+                "}";
     }
 
 }

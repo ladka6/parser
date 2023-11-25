@@ -1,18 +1,14 @@
 package com.backend.backend.parser.types;
 
-import org.json.JSONObject;
-
-public class ExpressionStatement implements Expression{
+public class ExpressionStatement implements Expression {
     private TypeEnum type;
-    private Expression binaryExpression;
+    private BinaryExpression binaryExpression;
 
-    public ExpressionStatement(TypeEnum type, Expression binaryExpression) {
+    public ExpressionStatement(TypeEnum type, BinaryExpression binaryExpression) {
         this.type = type;
         this.binaryExpression = binaryExpression;
     }
 
-
-    @Override
     public TypeEnum getType() {
         return this.type;
     }
@@ -21,21 +17,20 @@ public class ExpressionStatement implements Expression{
         this.type = type;
     }
 
-    public Expression getLiteral() {
+    public BinaryExpression getBinaryExpression() {
         return this.binaryExpression;
     }
 
-    public void setLiteral(Expression binaryExpression) {
+    public void setBinaryExpression(BinaryExpression binaryExpression) {
         this.binaryExpression = binaryExpression;
     }
 
-
     @Override
     public String toString() {
-        JSONObject json = new JSONObject();
-        json.put("type", getType());
-        json.put("literal", getLiteral());
-
-        return json.toString();
+        return "{" +
+                " type='" + getType() + "'" +
+                ", binaryExpression='" + getBinaryExpression() + "'" +
+                "}";
     }
+
 }

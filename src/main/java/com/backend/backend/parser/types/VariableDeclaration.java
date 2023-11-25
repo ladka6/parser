@@ -1,8 +1,6 @@
 package com.backend.backend.parser.types;
 
-import org.json.JSONObject;
-
-public class VariableDeclaration implements Expression{
+public class VariableDeclaration implements Expression {
     private TypeEnum type;
     private Expression id;
     private Expression init;
@@ -38,14 +36,13 @@ public class VariableDeclaration implements Expression{
         this.init = init;
     }
 
-        @Override
+    @Override
     public String toString() {
-        JSONObject json = new JSONObject();
-        json.put("type", getType());
-        json.put("id", getId());
-        json.put("init", getInit());
-
-        return json.toString();
+        return "{" +
+                " type='" + getType() + "'" +
+                ", id='" + getId() + "'" +
+                ", init='" + getInit() + "'" +
+                "}";
     }
 
 }

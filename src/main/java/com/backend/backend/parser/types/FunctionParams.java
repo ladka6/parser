@@ -13,7 +13,7 @@ public class FunctionParams implements Expression {
 
     @Override
     public TypeEnum getType() {
-        throw new UnsupportedOperationException("Unimplemented method 'getType'");
+        return this.type;
     }
 
     public void setType(TypeEnum type) {

@@ -1,8 +1,6 @@
 package com.backend.backend.parser.types;
 
-import org.json.JSONObject;
-
-public class EmptyStatement implements Expression{
+public class EmptyStatement implements Expression {
     private TypeEnum type;
 
     public EmptyStatement(TypeEnum type) {
@@ -18,12 +16,11 @@ public class EmptyStatement implements Expression{
         this.type = type;
     }
 
-        @Override
+    @Override
     public String toString() {
-        JSONObject json = new JSONObject();
-        json.put("type", getType());
-
-        return json.toString();
+        return "{" +
+                " type='" + getType() + "'" +
+                "}";
     }
 
 }

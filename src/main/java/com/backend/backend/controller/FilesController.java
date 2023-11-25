@@ -1,14 +1,11 @@
 package com.backend.backend.controller;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import com.backend.backend.Service.FilesStorageService;
-import com.backend.backend.message.ResponseMessage;
-import com.backend.backend.model.FileInfo;
-import com.backend.backend.parser.Parser;
-import com.backend.backend.parser.types.Program;
-import org.apache.tomcat.util.json.JSONParser;
+import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -23,9 +20,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+
+import com.backend.backend.Service.FilesStorageService;
+import com.backend.backend.message.ResponseMessage;
+import com.backend.backend.model.FileInfo;
+import com.backend.backend.parser.Parser;
+import com.backend.backend.parser.types.Program;
 
 @Controller
 @CrossOrigin("http://localhost:8000")
@@ -35,6 +35,7 @@ public class FilesController {
     FilesStorageService storageService;
 
     Parser parser = new Parser();
+    Gson gson = new Gson();
 
     @PostMapping("/upload")
     public ResponseEntity<ResponseMessage> uploadFile(@RequestParam("file") MultipartFile file) {
@@ -78,9 +79,10 @@ public class FilesController {
 
             Program astNode = parser.parse(fileContent);
 
+            String astString = gson.toJson(astNode);
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
-                    .body(astNode.toString());
+                    .body(astString);
         } catch (IOException e) {
             e.printStackTrace();
             // Handle the exception appropriately

@@ -1,9 +1,8 @@
 package com.backend.backend.parser.types;
+
 import java.util.List;
 
-import org.json.JSONObject;
-
-public class FunctionDeclaration implements Expression{
+public class FunctionDeclaration implements Expression {
     private TypeEnum type;
     private Expression name;
     private List<Expression> params;
@@ -49,16 +48,14 @@ public class FunctionDeclaration implements Expression{
         this.body = body;
     }
 
-        @Override
+    @Override
     public String toString() {
-        JSONObject json = new JSONObject();
-        json.put("type", getType());
-        json.put("name", getName());
-        json.put("params", getParams());
-        json.put("body", getBody());
-
-        return json.toString();
+        return "{" +
+                " type='" + getType() + "'" +
+                ", name='" + getName() + "'" +
+                ", params='" + getParams() + "'" +
+                ", body='" + getBody() + "'" +
+                "}";
     }
 
-    
 }

@@ -55,6 +55,7 @@ public class Parser {
     /**
      * Statement
      * : ExpressionStatement
+     * | ImportStatement
      * | BlockStatement
      * | EmptyStatement
      * | VariableStatement
@@ -69,7 +70,10 @@ public class Parser {
      * @throws Exception
      */
     private Expression statement() throws Throwable {
+
         switch (this._lookahead.getType()) {
+            case IMPORT_STATEMENT:
+                return this.importStatement();
             case SEMICOLON:
                 return emptyStatement();
             case IF:
@@ -89,6 +93,25 @@ public class Parser {
             default:
                 return expressionStatement();
         }
+    }
+
+    private Expression importStatement() throws Throwable {
+        List<String> paths = new ArrayList<>();
+
+        // do {
+        // String path = this._eat(TypeEnum.IMPORT_STATEMENT).getValue();
+        // } while (this._lookahead.getType().equals(TypeEnum.COMMA) &&
+        // this._eat(TypeEnum.COMMA) != null);
+
+        while (this._lookahead != null && this._lookahead.getType().equals(TypeEnum.IMPORT_STATEMENT)) {
+            String path = this._eat(TypeEnum.IMPORT_STATEMENT).getValue();
+            String[] splitted = path.split(" ");
+            String[] importStatementSplitted = splitted[1].split("\\.");
+
+            this._eat(TypeEnum.SEMICOLON);
+            paths.add(importStatementSplitted[importStatementSplitted.length - 1]);
+        }
+        return new ImportStatement(paths);
     }
 
     /**
@@ -297,7 +320,7 @@ public class Parser {
         Expression update = this._lookahead.getType() != TypeEnum.RIGTH_PARANTHESIS
                 ? this.expression()
                 : null;
-
+        ;
         this._eat(TypeEnum.RIGTH_PARANTHESIS);
 
         Expression body = this.statement();
@@ -315,7 +338,7 @@ public class Parser {
      * @throws Throwable
      */
     private Expression forStatementInit() throws Throwable {
-        if (this._lookahead.getType().equals(TypeEnum.LET)) {
+        if (this._lookahead.getType().equals(TypeEnum.IDENTIFIER)) {
             return this.variableStatementInit();
         }
         return this.expression();
@@ -353,7 +376,7 @@ public class Parser {
 
     /**
      * VariableStatementInit
-     * : 'let' VariableDeclarationList
+     * : Type opt'[' ']' VariableDeclarationList
      * ;
      * 
      * @return
@@ -584,7 +607,6 @@ public class Parser {
      * @throws Throwable
      */
     private Expression logicalORExpression() throws Throwable {
-        // return this.logicalExpression('LogicalANDExpression',TypeEnum.LOGICAL_OR);
         Expression left = logicalANDExpression();
 
         while (this._lookahead != null && this._lookahead.getType() == TypeEnum.LOGICAL_OR) {

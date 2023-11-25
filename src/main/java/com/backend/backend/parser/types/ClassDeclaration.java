@@ -1,8 +1,6 @@
 package com.backend.backend.parser.types;
 
-import org.json.JSONObject;
-
-public class ClassDeclaration implements Expression{
+public class ClassDeclaration implements Expression {
     private TypeEnum type;
     private Identifier id;
     private Identifier superClass;
@@ -48,15 +46,14 @@ public class ClassDeclaration implements Expression{
         this.body = body;
     }
 
-        @Override
+    @Override
     public String toString() {
-        JSONObject json = new JSONObject();
-        json.put("type", getType());
-        json.put("id", getId());
-        json.put("superClass", getSuperClass());
-        json.put("body", getBody());
-
-        return json.toString();
+        return "{" +
+                " type='" + getType() + "'" +
+                ", id='" + getId() + "'" +
+                ", superClass='" + getSuperClass() + "'" +
+                ", body='" + getBody() + "'" +
+                "}";
     }
 
 }

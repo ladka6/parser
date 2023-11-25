@@ -1,11 +1,9 @@
 package com.backend.backend.parser.types;
 
-import org.json.JSONObject;
-
-public class WhileStatement implements Expression{
+public class WhileStatement implements Expression {
     private TypeEnum type;
     private Expression test;
-    private Expression body; 
+    private Expression body;
 
     public WhileStatement(TypeEnum type, Expression test, Expression body) {
         this.type = type;
@@ -40,12 +38,11 @@ public class WhileStatement implements Expression{
 
     @Override
     public String toString() {
-        JSONObject json = new JSONObject();
-        json.put("type", getType());
-        json.put("test", getTest());
-        json.put("body", getBody());
-
-        return json.toString();
+        return "{" +
+                " type='" + getType() + "'" +
+                ", test='" + getTest() + "'" +
+                ", body='" + getBody() + "'" +
+                "}";
     }
 
 }

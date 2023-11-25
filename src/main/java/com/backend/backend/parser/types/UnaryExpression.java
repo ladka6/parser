@@ -1,8 +1,6 @@
 package com.backend.backend.parser.types;
 
-import org.json.JSONObject;
-
-public class UnaryExpression implements Expression{
+public class UnaryExpression implements Expression {
     private TypeEnum type;
     private Token operator;
     private Expression argument;
@@ -38,14 +36,13 @@ public class UnaryExpression implements Expression{
         this.argument = argument;
     }
 
-        @Override
+    @Override
     public String toString() {
-        JSONObject json = new JSONObject();
-        json.put("type", getType());
-        json.put("operator", getOperator());
-        json.put("argument", getArgument());
-
-        return json.toString();
+        return "{" +
+                " type='" + getType() + "'" +
+                ", operator='" + getOperator() + "'" +
+                ", argument='" + getArgument() + "'" +
+                "}";
     }
 
 }
