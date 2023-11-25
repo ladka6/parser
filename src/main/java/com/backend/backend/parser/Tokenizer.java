@@ -28,7 +28,7 @@ public class Tokenizer {
 		tokenSpecs.add(new TokenSpec("^\\bfor\\b", TypeEnum.FOR));
 		tokenSpecs.add(new TokenSpec("^\\bdef\\b", TypeEnum.DEF));
 		tokenSpecs.add(new TokenSpec("^\\breturn\\b", TypeEnum.RETURN));
-		tokenSpecs.add(new TokenSpec("^\\bclass\\b", TypeEnum.CLASS));
+		tokenSpecs.add(new TokenSpec("^\\b(public\\s+)?class\\b", TypeEnum.CLASS));
 		tokenSpecs.add(new TokenSpec("^\\bextends\\b", TypeEnum.EXTENDS));
 		tokenSpecs.add(new TokenSpec("^\\bsuper\\b", TypeEnum.SUPER));
 		tokenSpecs.add(new TokenSpec("^\\bnew\\b", TypeEnum.NEW));
@@ -58,7 +58,7 @@ public class Tokenizer {
 		tokenSpecs.add(new TokenSpec("^\\d+", TypeEnum.NUMBER));
 
 		// Identifiers
-		tokenSpecs.add(new TokenSpec("^\\w+", TypeEnum.IDENTIFIER));
+		tokenSpecs.add(new TokenSpec("^(public|protected|private)?\\s*(\\w+)", TypeEnum.IDENTIFIER));
 
 		// Equality
 		tokenSpecs.add((new TokenSpec("^[=!]=", TypeEnum.EQUALITY_OPERATOR)));

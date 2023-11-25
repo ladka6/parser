@@ -2,7 +2,6 @@ package com.backend.backend.parser;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Arrays;
 import com.backend.backend.exception.SyntaxError;
 import com.backend.backend.parser.types.AssignmentExpression;
 import com.backend.backend.parser.types.BinaryExpression;
@@ -112,7 +111,6 @@ public class Parser {
         Expression firstStatement = this.statement();
         setStatementList(firstStatement);
         statementList.add(firstStatement);
-        // statementList.add(this.statement());
 
         while (this._lookahead != null && this._lookahead.getType() != stopLookahead) {
             Expression statement = this.statement();
@@ -240,6 +238,11 @@ public class Parser {
 
         if (!isConstructor) {
             type = this._eat(TypeEnum.IDENTIFIER).getValue();
+
+            String[] checkMemberAccessArray = type.split(" ");
+            if (checkMemberAccessArray.length > 1) {
+                type = checkMemberAccessArray[1];
+            }
 
             if (!this.getPaths().contains(type)) {
                 throw new SyntaxError("Unspported function return type");
@@ -469,6 +472,11 @@ public class Parser {
             declarations.add(declaration);
         } else {
             type = this._eat(TypeEnum.IDENTIFIER).getValue();
+
+            String[] checkMemberAccessArray = type.split(" ");
+            if (checkMemberAccessArray.length > 1) {
+                type = checkMemberAccessArray[1];
+            }
 
             if (!this.getPaths().contains(type)) {
                 throw new SyntaxError("Unsupported variable type");
