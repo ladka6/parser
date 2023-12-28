@@ -2,7 +2,59 @@ package com.backend.backend.parser;
 
 import java.util.ArrayList;
 import java.util.List;
-import com.backend.backend.exception.SyntaxError;
+
+import com.backend.backend.exception.parserException.AdditiveExpressionException;
+import com.backend.backend.exception.parserException.ArgumentListException;
+import com.backend.backend.exception.parserException.ArgumentsException;
+import com.backend.backend.exception.parserException.AssignmentExpressionException;
+import com.backend.backend.exception.parserException.AssignmentOperatorExpressionException;
+import com.backend.backend.exception.parserException.BlockStatementException;
+import com.backend.backend.exception.parserException.BooleanLiteralException;
+import com.backend.backend.exception.parserException.CallExpressionException;
+import com.backend.backend.exception.parserException.CallMemberExpressionException;
+import com.backend.backend.exception.parserException.ClassDecarationException;
+import com.backend.backend.exception.parserException.DoWhileStatementException;
+import com.backend.backend.exception.parserException.EmptyStatementException;
+import com.backend.backend.exception.parserException.EqualityExpressionException;
+import com.backend.backend.exception.parserException.ExpressionException;
+import com.backend.backend.exception.parserException.ExpressionStatementException;
+import com.backend.backend.exception.parserException.ForStatementException;
+import com.backend.backend.exception.parserException.ForStatementInitException;
+import com.backend.backend.exception.parserException.FormalParameterListException;
+import com.backend.backend.exception.parserException.FunctionDeclarationException;
+import com.backend.backend.exception.parserException.FunctionOrVariableException;
+import com.backend.backend.exception.parserException.IdentifierException;
+import com.backend.backend.exception.parserException.IfStatementException;
+import com.backend.backend.exception.parserException.ImportStatementException;
+import com.backend.backend.exception.parserException.IterationStatementException;
+import com.backend.backend.exception.parserException.LeftHandSideExpressionException;
+import com.backend.backend.exception.parserException.LiteralExpressionException;
+import com.backend.backend.exception.parserException.LogicalAndExpressionException;
+import com.backend.backend.exception.parserException.LogicalOrExpressionException;
+import com.backend.backend.exception.parserException.MemberExpressionException;
+import com.backend.backend.exception.parserException.MultiplicativeExpressionException;
+import com.backend.backend.exception.parserException.NewExpressionException;
+import com.backend.backend.exception.parserException.NullLiteralException;
+import com.backend.backend.exception.parserException.NumericLiteralException;
+import com.backend.backend.exception.parserException.ParanthesizedExpressionException;
+import com.backend.backend.exception.parserException.PrimaryExpressionException;
+import com.backend.backend.exception.parserException.ProgramException;
+import com.backend.backend.exception.parserException.RelationalExpressionException;
+import com.backend.backend.exception.parserException.ReturnStatementException;
+import com.backend.backend.exception.parserException.StatementException;
+import com.backend.backend.exception.parserException.StatementListException;
+import com.backend.backend.exception.parserException.StringLiteralException;
+import com.backend.backend.exception.parserException.SuperExpressionException;
+import com.backend.backend.exception.parserException.SyntaxError;
+import com.backend.backend.exception.parserException.ThisExpressionException;
+import com.backend.backend.exception.parserException.UnaryExpressionException;
+import com.backend.backend.exception.parserException.ValidAssignmentException;
+import com.backend.backend.exception.parserException.VariableDeclarationException;
+import com.backend.backend.exception.parserException.VariableDeclarationListException;
+import com.backend.backend.exception.parserException.VariableInitializerException;
+import com.backend.backend.exception.parserException.VariableStatementException;
+import com.backend.backend.exception.parserException.VariableStatementInitException;
+import com.backend.backend.exception.parserException.WhileStatementException;
 import com.backend.backend.parser.types.AssignmentExpression;
 import com.backend.backend.parser.types.BinaryExpression;
 import com.backend.backend.parser.types.BlockStatement;
@@ -78,15 +130,19 @@ public class Parser {
         this.realList.clear();
     }
 
-    public Program parse(String string) throws Throwable {
-        this.resetStatementList();
+    public Program parse(String string) throws ProgramException {
+        try {
+            this.resetStatementList();
 
-        this._string = string;
-        this._tokenizer.init(string);
+            this._string = string;
+            this._tokenizer.init(string);
 
-        this._lookahead = this._tokenizer.getNextToken();
+            this._lookahead = this._tokenizer.getNextToken();
 
-        return this.program();
+            return this.program();
+        } catch (Exception e) {
+            throw new ProgramException("Unexpected program");
+        }
     }
 
     /*
@@ -94,8 +150,12 @@ public class Parser {
      * StatementList
      * ;
      */
-    private Program program() throws Throwable {
-        return new Program(TypeEnum.PROGRAM, this.statementList(null));
+    private Program program() throws ProgramException {
+        try {
+            return new Program(TypeEnum.PROGRAM, this.statementList(null));
+        } catch (Exception e) {
+            throw new ProgramException("Unexpected program");
+        }
     }
 
     /**
@@ -106,20 +166,24 @@ public class Parser {
      * @return
      * @throws Exception
      */
-    private List<Expression> statementList(TypeEnum stopLookahead) throws Throwable {
-        List<Expression> statementList = new ArrayList<>();
-        Expression firstStatement = this.statement();
-        setStatementList(firstStatement);
-        statementList.add(firstStatement);
+    private List<Expression> statementList(TypeEnum stopLookahead) throws StatementListException {
+        try {
+            List<Expression> statementList = new ArrayList<>();
+            Expression firstStatement = this.statement();
+            setStatementList(firstStatement);
+            statementList.add(firstStatement);
 
-        while (this._lookahead != null && this._lookahead.getType() != stopLookahead) {
-            Expression statement = this.statement();
-            setStatementList(statement);
-            statementList.add(statement);
+            while (this._lookahead != null && this._lookahead.getType() != stopLookahead) {
+                Expression statement = this.statement();
+                setStatementList(statement);
+                statementList.add(statement);
 
+            }
+
+            return statementList;
+        } catch (Exception e) {
+            throw new StatementListException("Unexpected statement list");
         }
-
-        return statementList;
     }
 
     /**
@@ -139,46 +203,54 @@ public class Parser {
      * @return
      * @throws Exception
      */
-    private Expression statement() throws Throwable {
-        switch (this._lookahead.getType()) {
-            case IMPORT_STATEMENT:
-                return this.importStatement();
-            case SEMICOLON:
-                return emptyStatement();
-            case IF:
-                return ifStatement();
-            case LEFT_BRACE:
-                return blockStatement();
-            case IDENTIFIER:
-                return this.functionOrVariable();
-            case CLASS:
-                return this.classDeclaration();
-            case RETURN:
-                return this.returnStatement();
-            case WHILE:
-            case DO:
-            case FOR:
-                return this.iterationStatement();
-            default:
-                return expressionStatement();
+    private Expression statement() throws StatementException {
+        try {
+            switch (this._lookahead.getType()) {
+                case IMPORT_STATEMENT:
+                    return this.importStatement();
+                case SEMICOLON:
+                    return emptyStatement();
+                case IF:
+                    return ifStatement();
+                case LEFT_BRACE:
+                    return blockStatement();
+                case IDENTIFIER:
+                    return this.functionOrVariable();
+                case CLASS:
+                    return this.classDeclaration();
+                case RETURN:
+                    return this.returnStatement();
+                case WHILE:
+                case DO:
+                case FOR:
+                    return this.iterationStatement();
+                default:
+                    return expressionStatement();
+            }
+        } catch (Exception e) {
+            throw new StatementException("Unexpected statement");
         }
     }
 
-    private ImportStatement importStatement() throws Throwable {
-        List<String> imports = new ArrayList<>();
+    private ImportStatement importStatement() throws ImportStatementException {
+        try {
+            List<String> imports = new ArrayList<>();
 
-        while (this._lookahead != null && this._lookahead.getType().equals(TypeEnum.IMPORT_STATEMENT)) {
-            String path = this._eat(TypeEnum.IMPORT_STATEMENT).getValue();
-            String[] splitted = path.split(" ");
-            String[] importStatementSplitted = splitted[1].split("\\.");
+            while (this._lookahead != null && this._lookahead.getType().equals(TypeEnum.IMPORT_STATEMENT)) {
+                String path = this._eat(TypeEnum.IMPORT_STATEMENT).getValue();
+                String[] splitted = path.split(" ");
+                String[] importStatementSplitted = splitted[1].split("\\.");
 
-            this._eat(TypeEnum.SEMICOLON);
-            String current = importStatementSplitted[importStatementSplitted.length - 1];
-            imports.add(current);
-            this.setPaths(current);
+                this._eat(TypeEnum.SEMICOLON);
+                String current = importStatementSplitted[importStatementSplitted.length - 1];
+                imports.add(current);
+                this.setPaths(current);
+            }
+
+            return new ImportStatement(imports);
+        } catch (Exception e) {
+            throw new ImportStatementException("Unexpected import statement");
         }
-
-        return new ImportStatement(imports);
     }
 
     /**
@@ -187,20 +259,23 @@ public class Parser {
      * ;
      * 
      * @return
-     * @throws Throwable
      */
-    private ClassDeclaration classDeclaration() throws Throwable {
-        this._eat(TypeEnum.CLASS);
+    private ClassDeclaration classDeclaration() throws ClassDecarationException {
+        try {
+            this._eat(TypeEnum.CLASS);
 
-        Identifier id = this.identifier();
+            Identifier id = this.identifier();
 
-        Identifier superClass = this._lookahead.getType().equals(TypeEnum.EXTENDS)
-                ? this.classExtends()
-                : null;
+            Identifier superClass = this._lookahead.getType().equals(TypeEnum.EXTENDS)
+                    ? this.classExtends()
+                    : null;
 
-        BlockStatement body = this.blockStatement();
+            BlockStatement body = this.blockStatement();
 
-        return new ClassDeclaration(TypeEnum.CLASS_DECLARATION, id, superClass, body);
+            return new ClassDeclaration(TypeEnum.CLASS_DECLARATION, id, superClass, body);
+        } catch (Exception e) {
+            throw new ClassDecarationException("Unexpected class declaration");
+        }
     }
 
     /**
@@ -208,20 +283,27 @@ public class Parser {
      * : 'extends' Identifier
      * 
      * @return
-     * @throws Throwable
      */
-    private Identifier classExtends() throws Throwable {
-        this._eat(TypeEnum.IDENTIFIER);
-        return this.identifier();
+    private Identifier classExtends() throws ClassCastException {
+        try {
+            this._eat(TypeEnum.IDENTIFIER);
+            return this.identifier();
+        } catch (Exception e) {
+            throw new ClassCastException("Unexpected class extends");
+        }
     }
 
-    private Expression functionOrVariable() throws Throwable {
-        if (this._tokenizer.lookTwoAhead().getType().equals(TypeEnum.LEFT_PARANTHESIS)) {
-            return this.functionDeclaration(false);
-        } else if (this._tokenizer.lookOneAhead().getType().equals(TypeEnum.LEFT_PARANTHESIS)) {
-            return this.functionDeclaration(true);
-        } else {
-            return this.variableStatement();
+    private Expression functionOrVariable() throws FunctionOrVariableException {
+        try {
+            if (this._tokenizer.lookTwoAhead().getType().equals(TypeEnum.LEFT_PARANTHESIS)) {
+                return this.functionDeclaration(false);
+            } else if (this._tokenizer.lookOneAhead().getType().equals(TypeEnum.LEFT_PARANTHESIS)) {
+                return this.functionDeclaration(true);
+            } else {
+                return this.variableStatement();
+            }
+        } catch (Exception e) {
+            throw new FunctionOrVariableException("Unexpected function or variable");
         }
     }
 
@@ -231,40 +313,43 @@ public class Parser {
      * ;
      * 
      * @return
-     * @throws Throwable
      */
-    private FunctionDeclaration functionDeclaration(boolean isConstructor) throws Throwable {
-        String type = null;
+    private FunctionDeclaration functionDeclaration(boolean isConstructor) throws FunctionDeclarationException {
+        try {
+            String type = null;
 
-        if (!isConstructor) {
-            type = this._eat(TypeEnum.IDENTIFIER).getValue();
+            if (!isConstructor) {
+                type = this._eat(TypeEnum.IDENTIFIER).getValue();
 
-            String[] checkMemberAccessArray = type.split(" ");
-            if (checkMemberAccessArray.length > 1) {
-                type = checkMemberAccessArray[1];
+                String[] checkMemberAccessArray = type.split(" ");
+                if (checkMemberAccessArray.length > 1) {
+                    type = checkMemberAccessArray[1];
+                }
+
+                if (!this.getPaths().contains(type)) {
+                    throw new SyntaxError("Unspported function return type");
+                }
+
             }
 
-            if (!this.getPaths().contains(type)) {
-                throw new SyntaxError("Unspported function return type");
+            Expression name = this.identifier();
+
+            this._eat(TypeEnum.LEFT_PARANTHESIS);
+            List<Expression> params;
+
+            if (this._lookahead.getType() != TypeEnum.RIGTH_PARANTHESIS) {
+                params = this.formalParameterList();
+            } else {
+                params = new ArrayList<>();
             }
 
+            this._eat(TypeEnum.RIGTH_PARANTHESIS);
+            BlockStatement body = this.blockStatement();
+
+            return new FunctionDeclaration(TypeEnum.FUNCTION_DECLARATION, type, name, params, body);
+        } catch (Exception e) {
+            throw new FunctionDeclarationException("Unexpected function declaration");
         }
-
-        Expression name = this.identifier();
-
-        this._eat(TypeEnum.LEFT_PARANTHESIS);
-        List<Expression> params;
-
-        if (this._lookahead.getType() != TypeEnum.RIGTH_PARANTHESIS) {
-            params = this.formalParameterList();
-        } else {
-            params = new ArrayList<>();
-        }
-
-        this._eat(TypeEnum.RIGTH_PARANTHESIS);
-        BlockStatement body = this.blockStatement();
-
-        return new FunctionDeclaration(TypeEnum.FUNCTION_DECLARATION, type, name, params, body);
     }
 
     /**
@@ -274,19 +359,22 @@ public class Parser {
      * ;
      * 
      * @return
-     * @throws Throwable
      */
-    private List<Expression> formalParameterList() throws Throwable {
-        List<Expression> params = new ArrayList<>();
+    private List<Expression> formalParameterList() throws FormalParameterListException {
+        try {
+            List<Expression> params = new ArrayList<>();
 
-        do {
-            String variableType = this._eat(TypeEnum.IDENTIFIER).getValue();
-            String variableName = this._eat(TypeEnum.IDENTIFIER).getValue();
-            FunctionParams functionParams = new FunctionParams(TypeEnum.IDENTIFIER, variableName, variableType);
-            params.add(functionParams);
-        } while (this._lookahead.getType().equals(TypeEnum.COMMA) && this._eat(TypeEnum.COMMA) != null);
+            do {
+                String variableType = this._eat(TypeEnum.IDENTIFIER).getValue();
+                String variableName = this._eat(TypeEnum.IDENTIFIER).getValue();
+                FunctionParams functionParams = new FunctionParams(TypeEnum.IDENTIFIER, variableName, variableType);
+                params.add(functionParams);
+            } while (this._lookahead.getType().equals(TypeEnum.COMMA) && this._eat(TypeEnum.COMMA) != null);
 
-        return params;
+            return params;
+        } catch (Exception e) {
+            throw new FormalParameterListException("Unexpected formal parameter list");
+        }
     }
 
     /**
@@ -294,16 +382,19 @@ public class Parser {
      * | 'return' OptExpression
      * 
      * @return
-     * @throws Throwable
      */
 
-    private ReturnStatement returnStatement() throws Throwable {
-        this._eat(TypeEnum.RETURN);
+    private ReturnStatement returnStatement() throws ReturnStatementException {
+        try {
+            this._eat(TypeEnum.RETURN);
 
-        Expression arguments = this._lookahead.getType() != TypeEnum.SEMICOLON ? this.expression() : null;
-        this._eat(TypeEnum.SEMICOLON);
+            Expression arguments = this._lookahead.getType() != TypeEnum.SEMICOLON ? this.expression() : null;
+            this._eat(TypeEnum.SEMICOLON);
 
-        return new ReturnStatement(TypeEnum.RETURN_STATEMENT, arguments);
+            return new ReturnStatement(TypeEnum.RETURN_STATEMENT, arguments);
+        } catch (Exception e) {
+            throw new ReturnStatementException("Unexpected return statement");
+        }
     }
 
     /**
@@ -314,18 +405,22 @@ public class Parser {
      * 
      * @return
      */
-    private Expression iterationStatement() throws Throwable {
-        switch (this._lookahead.getType()) {
-            case WHILE:
-                return this.whileStatement();
-            case DO:
-                return this.doWhileStatement();
-            case FOR:
-                return this.forStatement();
-            default:
-                break;
+    private Expression iterationStatement() throws IterationStatementException {
+        try {
+            switch (this._lookahead.getType()) {
+                case WHILE:
+                    return this.whileStatement();
+                case DO:
+                    return this.doWhileStatement();
+                case FOR:
+                    return this.forStatement();
+                default:
+                    break;
+            }
+            throw new SyntaxError("Error");
+        } catch (Exception e) {
+            throw new IterationStatementException("Unexpected iteration statement");
         }
-        throw new SyntaxError("Error");
     }
 
     // TODO implement types in loops
@@ -336,19 +431,22 @@ public class Parser {
      * ;
      * 
      * @return
-     * @throws Throwable
      */
-    private WhileStatement whileStatement() throws Throwable {
-        this._eat(TypeEnum.WHILE);
-        this._eat(TypeEnum.LEFT_PARANTHESIS);
+    private WhileStatement whileStatement() throws WhileStatementException {
+        try {
+            this._eat(TypeEnum.WHILE);
+            this._eat(TypeEnum.LEFT_PARANTHESIS);
 
-        Expression test = this.expression();
+            Expression test = this.expression();
 
-        this._eat(TypeEnum.RIGTH_PARANTHESIS);
+            this._eat(TypeEnum.RIGTH_PARANTHESIS);
 
-        Expression body = this.statement();
+            Expression body = this.statement();
 
-        return new WhileStatement(TypeEnum.WHILE_STATEMENT, test, body);
+            return new WhileStatement(TypeEnum.WHILE_STATEMENT, test, body);
+        } catch (Exception e) {
+            throw new WhileStatementException("Unexpected while statement");
+        }
     }
 
     /**
@@ -356,22 +454,25 @@ public class Parser {
      * : 'do' Statement 'while' '{' Expression '}' ';'
      * 
      * @return
-     * @throws Throwable
      */
-    private DoWhileStatement doWhileStatement() throws Throwable {
-        this._eat(TypeEnum.DO);
+    private DoWhileStatement doWhileStatement() throws DoWhileStatementException {
+        try {
+            this._eat(TypeEnum.DO);
 
-        Expression body = this.statement();
+            Expression body = this.statement();
 
-        this._eat(TypeEnum.WHILE);
-        this._eat(TypeEnum.LEFT_PARANTHESIS);
+            this._eat(TypeEnum.WHILE);
+            this._eat(TypeEnum.LEFT_PARANTHESIS);
 
-        Expression test = this.expression();
+            Expression test = this.expression();
 
-        this._eat(TypeEnum.RIGTH_PARANTHESIS);
-        this._eat(TypeEnum.SEMICOLON);
+            this._eat(TypeEnum.RIGTH_PARANTHESIS);
+            this._eat(TypeEnum.SEMICOLON);
 
-        return new DoWhileStatement(TypeEnum.DO_WHILE_STATEMENT, body, test);
+            return new DoWhileStatement(TypeEnum.DO_WHILE_STATEMENT, body, test);
+        } catch (Exception e) {
+            throw new DoWhileStatementException("Unexpected do while statement");
+        }
     }
 
     /**
@@ -381,31 +482,34 @@ public class Parser {
      * ;
      * 
      * @return
-     * @throws Throwable
      */
-    private ForStatement forStatement() throws Throwable {
-        this._eat(TypeEnum.FOR);
-        this._eat(TypeEnum.LEFT_PARANTHESIS);
+    private ForStatement forStatement() throws ForStatementException {
+        try {
+            this._eat(TypeEnum.FOR);
+            this._eat(TypeEnum.LEFT_PARANTHESIS);
 
-        Expression init = this._lookahead.getType() != TypeEnum.SEMICOLON
-                ? this.forStatementInit()
-                : null;
-        this._eat(TypeEnum.SEMICOLON);
+            Expression init = this._lookahead.getType() != TypeEnum.SEMICOLON
+                    ? this.forStatementInit()
+                    : null;
+            this._eat(TypeEnum.SEMICOLON);
 
-        Expression test = this._lookahead.getType() != TypeEnum.SEMICOLON
-                ? this.expression()
-                : null;
-        this._eat(TypeEnum.SEMICOLON);
+            Expression test = this._lookahead.getType() != TypeEnum.SEMICOLON
+                    ? this.expression()
+                    : null;
+            this._eat(TypeEnum.SEMICOLON);
 
-        Expression update = this._lookahead.getType() != TypeEnum.RIGTH_PARANTHESIS
-                ? this.expression()
-                : null;
-        ;
-        this._eat(TypeEnum.RIGTH_PARANTHESIS);
+            Expression update = this._lookahead.getType() != TypeEnum.RIGTH_PARANTHESIS
+                    ? this.expression()
+                    : null;
+            ;
+            this._eat(TypeEnum.RIGTH_PARANTHESIS);
 
-        Expression body = this.statement();
+            Expression body = this.statement();
 
-        return new ForStatement(TypeEnum.FOR_STATEMENT, init, test, update, body);
+            return new ForStatement(TypeEnum.FOR_STATEMENT, init, test, update, body);
+        } catch (Exception e) {
+            throw new ForStatementException("Unexpected for statement");
+        }
     }
 
     /**
@@ -415,13 +519,16 @@ public class Parser {
      * ;
      * 
      * @return
-     * @throws Throwable
      */
-    private Expression forStatementInit() throws Throwable {
-        if (this._lookahead.getType().equals(TypeEnum.IDENTIFIER)) {
-            return this.variableStatementInit();
+    private Expression forStatementInit() throws ForStatementInitException {
+        try {
+            if (this._lookahead.getType().equals(TypeEnum.IDENTIFIER)) {
+                return this.variableStatementInit();
+            }
+            return this.expression();
+        } catch (Exception e) {
+            throw new ForStatementInitException("Unexpected for statement init");
         }
-        return this.expression();
     }
 
     /**
@@ -433,25 +540,29 @@ public class Parser {
      * @return
      * @throws Exception
      */
-    private IfStatement ifStatement() throws Throwable {
-        this._eat(TypeEnum.IF);
-        this._eat(TypeEnum.LEFT_PARANTHESIS);
+    private IfStatement ifStatement() throws IfStatementException {
+        try {
+            this._eat(TypeEnum.IF);
+            this._eat(TypeEnum.LEFT_PARANTHESIS);
 
-        Expression test = this.expression();
+            Expression test = this.expression();
 
-        this._eat(TypeEnum.RIGTH_PARANTHESIS);
+            this._eat(TypeEnum.RIGTH_PARANTHESIS);
 
-        Expression consequent = this.statement();
+            Expression consequent = this.statement();
 
-        Expression alternate;
-        if (this._lookahead != null && this._lookahead.getType().equals(TypeEnum.ELSE)) {
-            this._eat(TypeEnum.ELSE);
-            alternate = this.statement();
-        } else {
-            alternate = null;
+            Expression alternate;
+            if (this._lookahead != null && this._lookahead.getType().equals(TypeEnum.ELSE)) {
+                this._eat(TypeEnum.ELSE);
+                alternate = this.statement();
+            } else {
+                alternate = null;
+            }
+
+            return new IfStatement(TypeEnum.IF_STATEMENT, test, consequent, alternate);
+        } catch (Exception e) {
+            throw new IfStatementException("Unexpected if statement");
         }
-
-        return new IfStatement(TypeEnum.IF_STATEMENT, test, consequent, alternate);
     }
 
     /**
@@ -461,30 +572,33 @@ public class Parser {
      * ;
      * 
      * @return
-     * @throws Throwable
      */
-    private VariableStatement variableStatementInit() throws Throwable {
-        List<VariableDeclaration> declarations = new ArrayList<>();
-        String type = null;
+    private VariableStatement variableStatementInit() throws VariableStatementInitException {
+        try {
+            List<VariableDeclaration> declarations = new ArrayList<>();
+            String type = null;
 
-        if (!this._tokenizer.lookOneAhead().getType().equals(TypeEnum.IDENTIFIER)) {
-            VariableDeclaration declaration = this.variableDeclaration();
-            declarations.add(declaration);
-        } else {
-            type = this._eat(TypeEnum.IDENTIFIER).getValue();
+            if (!this._tokenizer.lookOneAhead().getType().equals(TypeEnum.IDENTIFIER)) {
+                VariableDeclaration declaration = this.variableDeclaration();
+                declarations.add(declaration);
+            } else {
+                type = this._eat(TypeEnum.IDENTIFIER).getValue();
 
-            String[] checkMemberAccessArray = type.split(" ");
-            if (checkMemberAccessArray.length > 1) {
-                type = checkMemberAccessArray[1];
+                String[] checkMemberAccessArray = type.split(" ");
+                if (checkMemberAccessArray.length > 1) {
+                    type = checkMemberAccessArray[1];
+                }
+
+                if (!this.getPaths().contains(type)) {
+                    throw new SyntaxError("Unsupported variable type");
+                }
+                declarations = this.variableDeclarationList();
             }
 
-            if (!this.getPaths().contains(type)) {
-                throw new SyntaxError("Unsupported variable type");
-            }
-            declarations = this.variableDeclarationList();
+            return new VariableStatement(TypeEnum.VARIABLE_STATEMENT, type, declarations);
+        } catch (Exception e) {
+            throw new VariableStatementInitException("Unexpected variable statement init");
         }
-
-        return new VariableStatement(TypeEnum.VARIABLE_STATEMENT, type, declarations);
     }
 
     /**
@@ -495,10 +609,14 @@ public class Parser {
      * @return
      * @throws Exception
      */
-    private VariableStatement variableStatement() throws Throwable {
-        VariableStatement variableStatement = this.variableStatementInit();
-        this._eat(TypeEnum.SEMICOLON);
-        return variableStatement;
+    private VariableStatement variableStatement() throws VariableStatementException {
+        try {
+            VariableStatement variableStatement = this.variableStatementInit();
+            this._eat(TypeEnum.SEMICOLON);
+            return variableStatement;
+        } catch (Exception e) {
+            throw new VariableStatementException("Unexpected variable statement");
+        }
     }
 
     /**
@@ -506,14 +624,18 @@ public class Parser {
      * : VariableDeclaration
      * | VariableDeclarationList ',' VariableDeclaration
      */
-    private List<VariableDeclaration> variableDeclarationList() throws Throwable {
-        List<VariableDeclaration> declarations = new ArrayList<>();
+    private List<VariableDeclaration> variableDeclarationList() throws VariableDeclarationListException {
+        try {
+            List<VariableDeclaration> declarations = new ArrayList<>();
 
-        do {
-            declarations.add(this.variableDeclaration());
-        } while (this._lookahead.getType().equals(TypeEnum.COMMA) && this._eat(TypeEnum.COMMA) != null);
+            do {
+                declarations.add(this.variableDeclaration());
+            } while (this._lookahead.getType().equals(TypeEnum.COMMA) && this._eat(TypeEnum.COMMA) != null);
 
-        return declarations;
+            return declarations;
+        } catch (Exception e) {
+            throw new VariableDeclarationListException("Unexpected variable declaration list");
+        }
     }
 
     /**
@@ -521,15 +643,19 @@ public class Parser {
      * : Identifier OptVariableInitializer
      * ;
      */
-    private VariableDeclaration variableDeclaration() throws Throwable {
-        Expression id = this.identifier();
+    private VariableDeclaration variableDeclaration() throws VariableDeclarationException {
+        try {
+            Expression id = this.identifier();
 
-        Expression init = this._lookahead.getType() != TypeEnum.SEMICOLON
-                && this._lookahead.getType() != TypeEnum.COMMA
-                        ? this.variableInitializer()
-                        : null;
+            Expression init = this._lookahead.getType() != TypeEnum.SEMICOLON
+                    && this._lookahead.getType() != TypeEnum.COMMA
+                            ? this.variableInitializer()
+                            : null;
 
-        return new VariableDeclaration(TypeEnum.VARIABLE_DECLARATION, id, init);
+            return new VariableDeclaration(TypeEnum.VARIABLE_DECLARATION, id, init);
+        } catch (Exception e) {
+            throw new VariableDeclarationException("Unexpected variable declaration");
+        }
     }
 
     /**
@@ -540,9 +666,13 @@ public class Parser {
      * @throws Exception
      */
 
-    private Expression variableInitializer() throws Throwable {
-        this._eat(TypeEnum.SIMPLE_ASSIGN);
-        return this.assignmentExpression();
+    private Expression variableInitializer() throws VariableInitializerException {
+        try {
+            this._eat(TypeEnum.SIMPLE_ASSIGN);
+            return this.assignmentExpression();
+        } catch (Exception e) {
+            throw new VariableInitializerException("Unexpected variable initializer");
+        }
     }
 
     /**
@@ -551,9 +681,13 @@ public class Parser {
      * @return
      * @throws Exception
      */
-    private EmptyStatement emptyStatement() throws Throwable {
-        this._eat(TypeEnum.SEMICOLON);
-        return new EmptyStatement(TypeEnum.EMPTYSTATEMENT);
+    private EmptyStatement emptyStatement() throws EmptyStatementException {
+        try {
+            this._eat(TypeEnum.SEMICOLON);
+            return new EmptyStatement(TypeEnum.EMPTYSTATEMENT);
+        } catch (Exception e) {
+            throw new EmptyStatementException("Unexpected empty statement");
+        }
     }
 
     /**
@@ -564,16 +698,20 @@ public class Parser {
      * @return
      * @throws Exception
      */
-    private BlockStatement blockStatement() throws Throwable {
-        this._eat(TypeEnum.LEFT_BRACE);
+    private BlockStatement blockStatement() throws BlockStatementException {
+        try {
+            this._eat(TypeEnum.LEFT_BRACE);
 
-        List<Expression> body = this._lookahead.getType() != TypeEnum.RIGHT_BRACE
-                ? this.statementList(TypeEnum.RIGHT_BRACE)
-                : new ArrayList<>();
+            List<Expression> body = this._lookahead.getType() != TypeEnum.RIGHT_BRACE
+                    ? this.statementList(TypeEnum.RIGHT_BRACE)
+                    : new ArrayList<>();
 
-        this._eat(TypeEnum.RIGHT_BRACE);
+            this._eat(TypeEnum.RIGHT_BRACE);
 
-        return new BlockStatement(TypeEnum.BLOCK_STATEMENT, body);
+            return new BlockStatement(TypeEnum.BLOCK_STATEMENT, body);
+        } catch (Exception e) {
+            throw new BlockStatementException("Unexpected block statement");
+        }
     }
 
     /**
@@ -584,10 +722,14 @@ public class Parser {
      * @return
      * @throws Exception
      */
-    private ExpressionStatement expressionStatement() throws Throwable {
-        Expression expression = this.expression();
-        this._eat(TypeEnum.SEMICOLON);
-        return new ExpressionStatement(TypeEnum.EXPRESSION_STATEMENT, expression);
+    private ExpressionStatement expressionStatement() throws ExpressionStatementException {
+        try {
+            Expression expression = this.expression();
+            this._eat(TypeEnum.SEMICOLON);
+            return new ExpressionStatement(TypeEnum.EXPRESSION_STATEMENT, expression);
+        } catch (Exception e) {
+            throw new ExpressionStatementException("Unexpected expression statement");
+        }
     }
 
     // /^\w+/
@@ -599,8 +741,12 @@ public class Parser {
      * @return
      * @throws Exception
      */
-    private Expression expression() throws Throwable {
-        return this.assignmentExpression();
+    private Expression expression() throws ExpressionException {
+        try {
+            return this.assignmentExpression();
+        } catch (Exception e) {
+            throw new ExpressionException("Unexpected expression");
+        }
     }
 
     /**
@@ -611,14 +757,18 @@ public class Parser {
      * @return
      * @throws Exception
      */
-    private Expression assignmentExpression() throws Throwable {
-        Expression left = this.logicalORExpression();
-        if (!this.isAssignmentOperator(this._lookahead.getType())) {
-            return left;
-        }
+    private Expression assignmentExpression() throws AssignmentExpressionException {
+        try {
+            Expression left = this.logicalORExpression();
+            if (!this.isAssignmentOperator(this._lookahead.getType())) {
+                return left;
+            }
 
-        return new AssignmentExpression(TypeEnum.ASSIGNMENT_EXPRESSION, this.assignmentOperator(),
-                this.checkValidAssignment(left), this.assignmentExpression());
+            return new AssignmentExpression(TypeEnum.ASSIGNMENT_EXPRESSION, this.assignmentOperator(),
+                    this.checkValidAssignment(left), this.assignmentExpression());
+        } catch (Exception e) {
+            throw new AssignmentExpressionException("Unexpected assignment expression");
+        }
     }
 
     /**
@@ -628,16 +778,20 @@ public class Parser {
      * 
      * @return
      */
-    private Identifier identifier() throws Exception {
-        String name = this._eat(TypeEnum.IDENTIFIER).getValue();
-        return new Identifier(TypeEnum.IDENTIFIER, name);
+    private Identifier identifier() throws IdentifierException {
+        try {
+            String name = this._eat(TypeEnum.IDENTIFIER).getValue();
+            return new Identifier(TypeEnum.IDENTIFIER, name);
+        } catch (Exception e) {
+            throw new IdentifierException("Unexpected identifier");
+        }
     }
 
-    private Expression checkValidAssignment(Expression node) throws Exception {
+    private Expression checkValidAssignment(Expression node) throws ValidAssignmentException {
         if (node.getType().equals(TypeEnum.IDENTIFIER) || node.getType().equals(TypeEnum.MEMBER_EXPRESSION)) {
             return node;
         }
-        throw new Exception("Invalid left-hand side in assignment expression");
+        throw new ValidAssignmentException("Invalid left-hand side in assignment expression");
     }
 
     /**
@@ -659,11 +813,15 @@ public class Parser {
      * @return
      * @throws Exception
      */
-    private Token assignmentOperator() throws Exception {
-        if (this._lookahead.getType().equals(TypeEnum.SIMPLE_ASSIGN)) {
-            return this._eat(TypeEnum.SIMPLE_ASSIGN);
+    private Token assignmentOperator() throws AssignmentOperatorExpressionException {
+        try {
+            if (this._lookahead.getType().equals(TypeEnum.SIMPLE_ASSIGN)) {
+                return this._eat(TypeEnum.SIMPLE_ASSIGN);
+            }
+            return this._eat(TypeEnum.COMPLEX_ASSIGN);
+        } catch (Exception e) {
+            throw new AssignmentOperatorExpressionException("Unexpected assignment operator expression");
         }
-        return this._eat(TypeEnum.COMPLEX_ASSIGN);
     }
 
     /**
@@ -676,21 +834,23 @@ public class Parser {
      * ;
      * 
      * @return
-     * @throws Throwable
      */
-    private Expression logicalANDExpression() throws Throwable {
-        Expression left = equalityExpression();
+    private Expression logicalANDExpression() throws LogicalAndExpressionException {
+        try {
+            Expression left = equalityExpression();
 
-        while (this._lookahead != null && this._lookahead.getType() == TypeEnum.LOGICAL_AND) {
-            Token operator = this._eat(TypeEnum.LOGICAL_AND);
-            Expression right = this.equalityExpression();
-            LogicalExpression logicalExpression = new LogicalExpression(TypeEnum.BINARY_EXPRESSION, operator, left,
-                    right);
-            left = logicalExpression;
+            while (this._lookahead != null && this._lookahead.getType() == TypeEnum.LOGICAL_AND) {
+                Token operator = this._eat(TypeEnum.LOGICAL_AND);
+                Expression right = this.equalityExpression();
+                LogicalExpression logicalExpression = new LogicalExpression(TypeEnum.BINARY_EXPRESSION, operator, left,
+                        right);
+                left = logicalExpression;
+            }
+
+            return left;
+        } catch (Exception e) {
+            throw new LogicalAndExpressionException("Unexpected logical and expression");
         }
-
-        return left;
-        // return this.logicalExpression('EqualityExpression',TypeEnum.LOGICAL_AND);
     }
 
     /**
@@ -703,20 +863,23 @@ public class Parser {
      * ;
      * 
      * @return
-     * @throws Throwable
      */
-    private Expression logicalORExpression() throws Throwable {
-        Expression left = logicalANDExpression();
+    private Expression logicalORExpression() throws LogicalOrExpressionException {
+        try {
+            Expression left = logicalANDExpression();
 
-        while (this._lookahead != null && this._lookahead.getType() == TypeEnum.LOGICAL_OR) {
-            Token operator = this._eat(TypeEnum.LOGICAL_OR);
-            Expression right = this.logicalANDExpression();
-            LogicalExpression logicalExpression = new LogicalExpression(TypeEnum.BINARY_EXPRESSION, operator, left,
-                    right);
-            left = logicalExpression;
+            while (this._lookahead != null && this._lookahead.getType() == TypeEnum.LOGICAL_OR) {
+                Token operator = this._eat(TypeEnum.LOGICAL_OR);
+                Expression right = this.logicalANDExpression();
+                LogicalExpression logicalExpression = new LogicalExpression(TypeEnum.BINARY_EXPRESSION, operator, left,
+                        right);
+                left = logicalExpression;
+            }
+
+            return left;
+        } catch (Exception e) {
+            throw new LogicalOrExpressionException("Unexpected logical or expression");
         }
-
-        return left;
     }
 
     /**
@@ -729,19 +892,23 @@ public class Parser {
      * | RelationalExpression
      * 
      * @return
-     * @throws Throwable
      */
-    private Expression equalityExpression() throws Throwable {
-        Expression left = relationalExpression();
+    private Expression equalityExpression() throws EqualityExpressionException {
+        try {
+            Expression left = relationalExpression();
 
-        while (this._lookahead != null && this._lookahead.getType() == TypeEnum.EQUALITY_OPERATOR) {
-            Token operator = this._eat(TypeEnum.EQUALITY_OPERATOR);
-            Expression right = this.relationalExpression();
-            BinaryExpression binaryExpression = new BinaryExpression(TypeEnum.BINARY_EXPRESSION, operator, left, right);
-            left = binaryExpression;
+            while (this._lookahead != null && this._lookahead.getType() == TypeEnum.EQUALITY_OPERATOR) {
+                Token operator = this._eat(TypeEnum.EQUALITY_OPERATOR);
+                Expression right = this.relationalExpression();
+                BinaryExpression binaryExpression = new BinaryExpression(TypeEnum.BINARY_EXPRESSION, operator, left,
+                        right);
+                left = binaryExpression;
+            }
+
+            return left;
+        } catch (Exception e) {
+            throw new EqualityExpressionException("Unexpected equality expression");
         }
-
-        return left;
     }
 
     /**
@@ -752,19 +919,23 @@ public class Parser {
      * | AdditiveExpression RELATIONAL_OPERATOR RelationalExpression
      * 
      * @return
-     * @throws Throwable
      */
-    private Expression relationalExpression() throws Throwable {
-        Expression left = additiveExpression();
+    private Expression relationalExpression() throws RelationalExpressionException {
+        try {
+            Expression left = additiveExpression();
 
-        while (this._lookahead != null && this._lookahead.getType() == TypeEnum.RELATIONAL_OPERATOR) {
-            Token operator = this._eat(TypeEnum.RELATIONAL_OPERATOR);
-            Expression right = this.additiveExpression();
-            BinaryExpression binaryExpression = new BinaryExpression(TypeEnum.BINARY_EXPRESSION, operator, left, right);
-            left = binaryExpression;
+            while (this._lookahead != null && this._lookahead.getType() == TypeEnum.RELATIONAL_OPERATOR) {
+                Token operator = this._eat(TypeEnum.RELATIONAL_OPERATOR);
+                Expression right = this.additiveExpression();
+                BinaryExpression binaryExpression = new BinaryExpression(TypeEnum.BINARY_EXPRESSION, operator, left,
+                        right);
+                left = binaryExpression;
+            }
+
+            return left;
+        } catch (Exception e) {
+            throw new RelationalExpressionException("Unexpected relational expression");
         }
-
-        return left;
     }
 
     /**
@@ -775,32 +946,40 @@ public class Parser {
      * @return
      * @throws Exception
      */
-    private Expression additiveExpression() throws Throwable {
-        // return this.binaryExpression("multiplicativeExpression",
-        // TypeEnum.ADDITIVE_OPERATOR);
-        Expression left = multiplicativeExpression();
+    private Expression additiveExpression() throws AdditiveExpressionException {
+        try {
+            Expression left = multiplicativeExpression();
 
-        while (this._lookahead != null && this._lookahead.getType() == TypeEnum.ADDITIVE_OPERATOR) {
-            Token operator = this._eat(TypeEnum.ADDITIVE_OPERATOR);
-            Expression right = this.multiplicativeExpression();
-            BinaryExpression binaryExpression = new BinaryExpression(TypeEnum.BINARY_EXPRESSION, operator, left, right);
-            left = binaryExpression;
+            while (this._lookahead != null && this._lookahead.getType() == TypeEnum.ADDITIVE_OPERATOR) {
+                Token operator = this._eat(TypeEnum.ADDITIVE_OPERATOR);
+                Expression right = this.multiplicativeExpression();
+                BinaryExpression binaryExpression = new BinaryExpression(TypeEnum.BINARY_EXPRESSION, operator, left,
+                        right);
+                left = binaryExpression;
+            }
+
+            return left;
+        } catch (Exception e) {
+            throw new AdditiveExpressionException("Unexpected additive expression");
         }
-
-        return left;
     }
 
-    private Expression multiplicativeExpression() throws Throwable {
-        Expression left = unaryExpression();
+    private Expression multiplicativeExpression() throws MultiplicativeExpressionException {
+        try {
+            Expression left = unaryExpression();
 
-        while (this._lookahead != null && this._lookahead.getType() == TypeEnum.MULTIPLICATIVE_OPERATOR) {
-            Token operator = this._eat(TypeEnum.MULTIPLICATIVE_OPERATOR);
-            Expression right = this.unaryExpression();
-            BinaryExpression binaryExpression = new BinaryExpression(TypeEnum.BINARY_EXPRESSION, operator, left, right);
-            left = binaryExpression;
+            while (this._lookahead != null && this._lookahead.getType() == TypeEnum.MULTIPLICATIVE_OPERATOR) {
+                Token operator = this._eat(TypeEnum.MULTIPLICATIVE_OPERATOR);
+                Expression right = this.unaryExpression();
+                BinaryExpression binaryExpression = new BinaryExpression(TypeEnum.BINARY_EXPRESSION, operator, left,
+                        right);
+                left = binaryExpression;
+            }
+
+            return left;
+        } catch (Exception e) {
+            throw new MultiplicativeExpressionException("Unexpected multiplicative expression");
         }
-
-        return left;
     }
 
     /**
@@ -811,23 +990,27 @@ public class Parser {
      * 
      * @return
      */
-    private Expression unaryExpression() throws Throwable {
-        Token operator = null;
-        switch (this._lookahead.getType()) {
-            case ADDITIVE_OPERATOR:
-                operator = this._eat(TypeEnum.ADDITIVE_OPERATOR);
-                break;
-            case LOGICAL_NOT:
-                operator = this._eat(TypeEnum.LOGICAL_NOT);
-                break;
+    private Expression unaryExpression() throws UnaryExpressionException {
+        try {
+            Token operator = null;
+            switch (this._lookahead.getType()) {
+                case ADDITIVE_OPERATOR:
+                    operator = this._eat(TypeEnum.ADDITIVE_OPERATOR);
+                    break;
+                case LOGICAL_NOT:
+                    operator = this._eat(TypeEnum.LOGICAL_NOT);
+                    break;
 
+            }
+
+            if (operator != null) {
+                return new UnaryExpression(TypeEnum.UNARY_EXPRESSION, operator, this.unaryExpression());
+            }
+
+            return this.leftHandSidExpression();
+        } catch (Exception e) {
+            throw new UnaryExpressionException("Unexpected unary expression");
         }
-
-        if (operator != null) {
-            return new UnaryExpression(TypeEnum.UNARY_EXPRESSION, operator, this.unaryExpression());
-        }
-
-        return this.leftHandSidExpression();
     }
 
     /**
@@ -837,8 +1020,12 @@ public class Parser {
      * 
      * @return
      */
-    private Expression leftHandSidExpression() throws Throwable {
-        return this.callMemberExpression();
+    private Expression leftHandSidExpression() throws LeftHandSideExpressionException {
+        try {
+            return this.callMemberExpression();
+        } catch (Exception e) {
+            throw new LeftHandSideExpressionException("Unexpected left hand side expression");
+        }
     }
 
     /**
@@ -847,20 +1034,23 @@ public class Parser {
      * | CallExpression
      * 
      * @return
-     * @throws Throwable
      */
-    private Expression callMemberExpression() throws Throwable {
-        if (this._lookahead.getType().equals(TypeEnum.SUPER)) {
-            return this.callExpression(this.superExpression());
+    private Expression callMemberExpression() throws CallMemberExpressionException {
+        try {
+            if (this._lookahead.getType().equals(TypeEnum.SUPER)) {
+                return this.callExpression(this.superExpression());
+            }
+
+            Expression member = this.memberExpression();
+
+            if (this._lookahead.getType().equals(TypeEnum.LEFT_PARANTHESIS)) {
+                return this.callExpression(member);
+            }
+
+            return member;
+        } catch (Exception e) {
+            throw new CallMemberExpressionException("Unexpected call member expression");
         }
-
-        Expression member = this.memberExpression();
-
-        if (this._lookahead.getType().equals(TypeEnum.LEFT_PARANTHESIS)) {
-            return this.callExpression(member);
-        }
-
-        return member;
     }
 
     /**
@@ -875,15 +1065,18 @@ public class Parser {
      * 
      * @param callee
      * @return
-     * @throws Throwable
      */
-    private Expression callExpression(Expression callee) throws Throwable {
-        Expression callExpression = new CallExpression(TypeEnum.CALL_EXPRESSION, callee, this.arguments());
+    private Expression callExpression(Expression callee) throws CallExpressionException {
+        try {
+            Expression callExpression = new CallExpression(TypeEnum.CALL_EXPRESSION, callee, this.arguments());
 
-        if (this._lookahead.getType().equals(TypeEnum.LEFT_PARANTHESIS)) {
-            callExpression = this.callExpression(callExpression);
+            if (this._lookahead.getType().equals(TypeEnum.LEFT_PARANTHESIS)) {
+                callExpression = this.callExpression(callExpression);
+            }
+            return callExpression;
+        } catch (Exception e) {
+            throw new CallExpressionException("Unexpected call expression");
         }
-        return callExpression;
     }
 
     /**
@@ -892,18 +1085,21 @@ public class Parser {
      * ;
      * 
      * @return
-     * @throws Throwable
      */
-    private List<Expression> arguments() throws Throwable {
-        this._eat(TypeEnum.LEFT_PARANTHESIS);
+    private List<Expression> arguments() throws ArgumentsException {
+        try {
+            this._eat(TypeEnum.LEFT_PARANTHESIS);
 
-        List<Expression> argumentList = this._lookahead.getType() != TypeEnum.RIGTH_PARANTHESIS
-                ? this.argumentList()
-                : new ArrayList<>();
+            List<Expression> argumentList = this._lookahead.getType() != TypeEnum.RIGTH_PARANTHESIS
+                    ? this.argumentList()
+                    : new ArrayList<>();
 
-        this._eat(TypeEnum.RIGTH_PARANTHESIS);
+            this._eat(TypeEnum.RIGTH_PARANTHESIS);
 
-        return argumentList;
+            return argumentList;
+        } catch (Exception e) {
+            throw new ArgumentsException("Unexpected argument list");
+        }
     }
 
     /**
@@ -912,16 +1108,19 @@ public class Parser {
      * | ArgumentList ',' AssignmentExpression
      * 
      * @return
-     * @throws Throwable
      */
-    private List<Expression> argumentList() throws Throwable {
-        List<Expression> argumentList = new ArrayList<>();
+    private List<Expression> argumentList() throws ArgumentListException {
+        try {
+            List<Expression> argumentList = new ArrayList<>();
 
-        do {
-            argumentList.add(this.assignmentExpression());
-        } while (this._lookahead.getType().equals(TypeEnum.COMMA) && this._eat(TypeEnum.COMMA) != null);
+            do {
+                argumentList.add(this.assignmentExpression());
+            } while (this._lookahead.getType().equals(TypeEnum.COMMA) && this._eat(TypeEnum.COMMA) != null);
 
-        return argumentList;
+            return argumentList;
+        } catch (Exception e) {
+            throw new ArgumentListException("Unexpected argument list");
+        }
     }
 
     /**
@@ -931,28 +1130,31 @@ public class Parser {
      * | MemberExpression '[' Expression ']'
      * 
      * @return
-     * @throws Throwable
      */
-    private Expression memberExpression() throws Throwable {
-        Expression object = this.primaryExpression();
+    private Expression memberExpression() throws MemberExpressionException {
+        try {
+            Expression object = this.primaryExpression();
 
-        while (this._lookahead.getType().equals(TypeEnum.DOT)
-                || this._lookahead.getType().equals(TypeEnum.LEFT_SQUARED_BRACE)) {
-            // MemberExpression '.' Identifier
-            if (this._lookahead.getType().equals(TypeEnum.DOT)) {
-                this._eat(TypeEnum.DOT);
-                Expression property = this.identifier();
-                object = new MemberExpression(TypeEnum.MEMBER_EXPRESSION, false, object, property);
+            while (this._lookahead.getType().equals(TypeEnum.DOT)
+                    || this._lookahead.getType().equals(TypeEnum.LEFT_SQUARED_BRACE)) {
+                // MemberExpression '.' Identifier
+                if (this._lookahead.getType().equals(TypeEnum.DOT)) {
+                    this._eat(TypeEnum.DOT);
+                    Expression property = this.identifier();
+                    object = new MemberExpression(TypeEnum.MEMBER_EXPRESSION, false, object, property);
+                }
+                // MemberExpression '[' Identifier ']'
+                if (this._lookahead.getType().equals(TypeEnum.LEFT_SQUARED_BRACE)) {
+                    this._eat(TypeEnum.LEFT_SQUARED_BRACE);
+                    Expression property = this.expression();
+                    this._eat(TypeEnum.RIGHT_SQUARED_BRACE);
+                    object = new MemberExpression(TypeEnum.MEMBER_EXPRESSION, true, object, property);
+                }
             }
-            // MemberExpression '[' Identifier ']'
-            if (this._lookahead.getType().equals(TypeEnum.LEFT_SQUARED_BRACE)) {
-                this._eat(TypeEnum.LEFT_SQUARED_BRACE);
-                Expression property = this.expression();
-                this._eat(TypeEnum.RIGHT_SQUARED_BRACE);
-                object = new MemberExpression(TypeEnum.MEMBER_EXPRESSION, true, object, property);
-            }
+            return object;
+        } catch (Exception e) {
+            throw new MemberExpressionException("Unexpected member expression");
         }
-        return object;
     }
 
     /**
@@ -965,23 +1167,26 @@ public class Parser {
      * ;
      * 
      * @return
-     * @throws Throwable
      */
-    private Expression primaryExpression() throws Throwable {
-        if (this.isLiteral(this._lookahead.getType())) {
-            return this.literal();
-        }
-        switch (this._lookahead.getType()) {
-            case LEFT_PARANTHESIS:
-                return this.paranthesizedExpression();
-            case IDENTIFIER:
-                return this.identifier();
-            case THIS:
-                return this.thisExpression();
-            case NEW:
-                return this.newExpression();
-            default:
-                return this.leftHandSidExpression();
+    private Expression primaryExpression() throws PrimaryExpressionException {
+        try {
+            if (this.isLiteral(this._lookahead.getType())) {
+                return this.literal();
+            }
+            switch (this._lookahead.getType()) {
+                case LEFT_PARANTHESIS:
+                    return this.paranthesizedExpression();
+                case IDENTIFIER:
+                    return this.identifier();
+                case THIS:
+                    return this.thisExpression();
+                case NEW:
+                    return this.newExpression();
+                default:
+                    return this.leftHandSidExpression();
+            }
+        } catch (Exception e) {
+            throw new PrimaryExpressionException("Unexpected primary expression");
         }
     }
 
@@ -991,11 +1196,14 @@ public class Parser {
      * ;
      * 
      * @return
-     * @throws Throwable
      */
-    private NewExpression newExpression() throws Throwable {
-        this._eat(TypeEnum.NEW);
-        return new NewExpression(TypeEnum.NEW_EXPRESSION, this.memberExpression(), this.arguments());
+    private NewExpression newExpression() throws NewExpressionException {
+        try {
+            this._eat(TypeEnum.NEW);
+            return new NewExpression(TypeEnum.NEW_EXPRESSION, this.memberExpression(), this.arguments());
+        } catch (Exception e) {
+            throw new NewExpressionException("Unexpected new expression");
+        }
     }
 
     /**
@@ -1004,16 +1212,23 @@ public class Parser {
      * ;
      * 
      * @return
-     * @throws Throwable
      */
-    private ThisExpression thisExpression() throws Throwable {
-        this._eat(TypeEnum.THIS);
-        return new ThisExpression(TypeEnum.THIS_EXPRESSION);
+    private ThisExpression thisExpression() throws ThisExpressionException {
+        try {
+            this._eat(TypeEnum.THIS);
+            return new ThisExpression(TypeEnum.THIS_EXPRESSION);
+        } catch (Exception e) {
+            throw new ThisExpressionException("Unexpected this expression");
+        }
     }
 
-    private SuperExpression superExpression() throws Throwable {
-        this._eat(TypeEnum.SUPER);
-        return new SuperExpression(TypeEnum.SUPER_EXPRESSION);
+    private SuperExpression superExpression() throws SuperExpressionException {
+        try {
+            this._eat(TypeEnum.SUPER);
+            return new SuperExpression(TypeEnum.SUPER_EXPRESSION);
+        } catch (Exception e) {
+            throw new SuperExpressionException("Unexpected super expression");
+        }
     }
 
     private boolean isLiteral(TypeEnum tokenType) {
@@ -1024,11 +1239,16 @@ public class Parser {
                 || tokenType.equals(TypeEnum.NULL);
     }
 
-    private Expression paranthesizedExpression() throws Throwable {
-        this._eat(TypeEnum.LEFT_PARANTHESIS);
-        Expression expression = this.expression();
-        this._eat(TypeEnum.RIGTH_PARANTHESIS);
-        return expression;
+    private Expression paranthesizedExpression() throws ParanthesizedExpressionException {
+        try {
+            this._eat(TypeEnum.LEFT_PARANTHESIS);
+            Expression expression = this.expression();
+            this._eat(TypeEnum.RIGTH_PARANTHESIS);
+            return expression;
+        } catch (Exception e) {
+            throw new ParanthesizedExpressionException("Unexpected paranthesized expression");
+        }
+
     }
 
     /**
@@ -1039,55 +1259,73 @@ public class Parser {
      * | NullLitearl
      * @return(Literal)
      */
-    private Literal literal() throws Throwable {
-        switch (this._lookahead.getType()) {
-            case STRING:
-                return this.stringLiteral();
-            case NUMBER:
-                return this.numericLitearl();
-            case TRUE:
-                return this.booleanLiteral(true);
-            case FALSE:
-                return this.booleanLiteral(false);
-            case NULL:
-                return this.nullLiteral();
-            default:
-                return null;
+    private Literal literal() throws LiteralExpressionException {
+        try {
+            switch (this._lookahead.getType()) {
+                case STRING:
+                    return this.stringLiteral();
+                case NUMBER:
+                    return this.numericLitearl();
+                case TRUE:
+                    return this.booleanLiteral(true);
+                case FALSE:
+                    return this.booleanLiteral(false);
+                case NULL:
+                    return this.nullLiteral();
+                default:
+                    return null;
+            }
+        } catch (Exception e) {
+            throw new LiteralExpressionException("Unexpected literal expression");
         }
     }
 
-    private BooleanLiteral booleanLiteral(boolean value) throws Throwable {
-        this._eat(value ? TypeEnum.TRUE : TypeEnum.FALSE);
-        return new BooleanLiteral(TypeEnum.BOOLEAN_LITERAL, String.valueOf(value));
+    private BooleanLiteral booleanLiteral(boolean value) throws BooleanLiteralException {
+        try {
+            this._eat(value ? TypeEnum.TRUE : TypeEnum.FALSE);
+            return new BooleanLiteral(TypeEnum.BOOLEAN_LITERAL, String.valueOf(value));
+        } catch (Exception e) {
+            throw new BooleanLiteralException("Unexpected boolean literal");
+        }
     }
 
-    private NullLiteral nullLiteral() throws Throwable {
-        this._eat(TypeEnum.NULL);
-        return new NullLiteral(TypeEnum.NULL_LITERAL, null);
+    private NullLiteral nullLiteral() throws NullLiteralException {
+        try {
+            this._eat(TypeEnum.NULL);
+            return new NullLiteral(TypeEnum.NULL_LITERAL, null);
+        } catch (Exception e) {
+            throw new NullLiteralException("Unexpected null literal");
+        }
     }
 
-    private StringLiteral stringLiteral() throws Exception {
-        Token token = this._eat(TypeEnum.STRING);
-
-        return new StringLiteral(TypeEnum.STRING, token.getValue());
+    private StringLiteral stringLiteral() throws StringLiteralException {
+        try {
+            Token token = this._eat(TypeEnum.STRING);
+            return new StringLiteral(TypeEnum.STRING, token.getValue());
+        } catch (Exception e) {
+            throw new StringLiteralException("Unexpected string literal");
+        }
     }
 
-    private NumericLiteral numericLitearl() throws Exception {
-        Token token = this._eat(TypeEnum.NUMBER);
-
-        return new NumericLiteral(TypeEnum.NUMBER, token.getValue());
+    private NumericLiteral numericLitearl() throws NumericLiteralException {
+        try {
+            Token token = this._eat(TypeEnum.NUMBER);
+            return new NumericLiteral(TypeEnum.NUMBER, token.getValue());
+        } catch (Exception e) {
+            throw new NumericLiteralException("Unexpected numeric literal");
+        }
     }
 
-    private Token _eat(TypeEnum tokenType) throws SyntaxError, Exception {
+    private Token _eat(TypeEnum tokenType) throws SyntaxError {
         Token token = this._lookahead;
 
         if (token == null) {
-            throw new Exception(
+            throw new SyntaxError(
                     "Unexpected end of input, expected:" + tokenType);
         }
 
         if (!token.getType().equals(tokenType)) {
-            throw new Exception(
+            throw new SyntaxError(
                     "Unexpected token type " + token + " , getting " + tokenType);
         }
 

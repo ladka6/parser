@@ -1,10 +1,10 @@
 package com.backend.backend.parser;
 
-import com.backend.backend.exception.SyntaxError;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import com.backend.backend.exception.parserException.SyntaxError;
 import com.backend.backend.parser.types.Token;
 import com.backend.backend.parser.types.TypeEnum;
 

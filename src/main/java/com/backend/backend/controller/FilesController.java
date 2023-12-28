@@ -22,13 +22,14 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.backend.backend.Service.FilesStorageService;
+import com.backend.backend.exception.parserException.ProgramException;
 import com.backend.backend.message.ResponseMessage;
 import com.backend.backend.model.FileInfo;
 import com.backend.backend.parser.Parser;
 import com.backend.backend.parser.types.Program;
 
 @Controller
-@CrossOrigin("http://localhost:8000")
+@CrossOrigin("http://localhost:8001")
 public class FilesController {
 
     @Autowired
@@ -66,7 +67,7 @@ public class FilesController {
 
     @GetMapping("/files/{filename:.+}")
     @ResponseBody
-    public ResponseEntity<String> getFile(@PathVariable String filename) {
+    public ResponseEntity<ResponseMessage> getFile(@PathVariable String filename) throws ProgramException {
         Resource file = storageService.load(filename);
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
@@ -82,13 +83,14 @@ public class FilesController {
             String astString = gson.toJson(astNode);
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")
-                    .body(astString);
+                    .body(new ResponseMessage(astString));
         } catch (IOException e) {
             e.printStackTrace();
             // Handle the exception appropriately
-            return ResponseEntity.badRequest().body("Error");
-        } catch (Throwable e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.badRequest().body(new ResponseMessage("Error reading file"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new ResponseMessage(e.getMessage()));
+            
         }
     }
 }
